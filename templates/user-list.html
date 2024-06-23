@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+<script>
+    $(".clear-search").click(function() {
+      $("input[name='search_keyword']").val("");
+    });
+</script>
+{% endblock %}
+
+{% block title %}Danh sách User{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+      <div class="col-md-10">
+        <h1>Danh sách User</h1>
+      </div>
+      <div class="col-md-2">
+        <div class="d-flex justify-content-end mt-2">
+            <a class="btn btn-primary" href="{{ url_for('user.user_add_edit') }}">Thêm User</a>
+        </div>
+      </div>
+    </div>
+    <form action="{{ url_for('user.user_search') }}" method="POST" class="mb-3">
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" name="search_keyword" placeholder="Tên, Tên đăng nhập" aria-label="Search" value="{{ search_keyword }}">
+        <button class="btn btn-outline-secondary clear-search" type="button">✕</button>
+        <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+      </div>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Tên đăng nhập</th>
+                <th>Tên quyền</th>
+                <th>Chi tiết</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role.name }}</td>
+                <td>
+                    <a href="{{ url_for('user.user_detail', user_id=user.id) }}" class="btn btn-primary">Xem</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

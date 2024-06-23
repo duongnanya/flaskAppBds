@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Tỉnh/thành{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-10">
+      <h1>Import Tỉnh/thành</h1>
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      {% if error %}
+        <div class="alert alert-danger">
+          Có lỗi xảy ra trong quá trình import dữ liệu.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <form action="{{ url_for('common.handle_imported_file') }}" method="POST" enctype="multipart/form-data">
+        <div class="input-group">
+            <input type="file" class="form-control" name="imported_excel" accept=".xlsx, .xls" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+            <button class="btn btn-outline-secondary" type="submit" id="inputGroupFileAddon04" value="Import">Import</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if success %}
+    <div class="row">
+      <div class="col-md-12">
+        <div class="alert alert-success">
+          Import data thành công!
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

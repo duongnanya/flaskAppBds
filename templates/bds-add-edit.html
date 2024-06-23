@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+    <script>
+        $('input[type="checkbox"][name="delete_images[]"]').change(function() {
+            var $imageContainer = $(this).closest('.col-md-3');
+            if ($(this).is(':checked')) {
+                $imageContainer.find('img').addClass('opacity-50');
+            } else {
+                $imageContainer.find('img').removeClass('opacity-50');
+            }
+        });
+
+        $('#province-select').on('change', function() {
+            var provinceId = $(this).val();
+            $.ajax({
+                url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+                type: 'GET',
+                success: function(data) {
+                    $('#city-select').empty();
+                    $('#city-select').append('<option value="">- Chọn thành phố / huyện -</option>');
+                    $.each(data, function(index, city) {
+                        $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
+                    });
+                    // Chọn option đầu tiên nếu có dữ liệu
+                    if (data.length > 0) {
+                        $('#city-select').val(data[0].id);
+                    }
+                }
+            });
+        });
+
+        // TODO viết jquery để
+        // khi edit (focus), thì hiện số đầy đủ
+        // khi không edit, thì hiện đơn vị
+        // ví dụ
+
+        // 1000 thì hiện 1 Nghìn
+        // 2000000 thì hiện 2 Triệu
+        // 2100000 thì hiện 2.1 Triệu
+        // 3000000000 thì hiện 3 Tỷ
+        // 3210000000 thì hiện 3.21 Tỷ
+    </script>
+{% endblock %}
+
+{% block title %}Thêm/Chỉnh sửa Bds{% endblock %}
+
+{% block content %}
+<div class="container">
+    <form class="" method="POST" action="{{ url_for('bds.bds_add_edit', bds_id=bds.id if bds else None) }}" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-10">
+                <h1>{% if bds %}Chỉnh sửa Bds{% else %}Thêm Bds{% endif %}</h1>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex justify-content-end mt-2">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+        </div>
+    
+        <div class="mb-3">
+        <label for="img_url" class="form-label">Upload ảnh:</label>
+        <input id="input-2" name="input2[]" type="file" class="file form-control"  data-show-upload="false" data-show-caption="true" multiple>
+
+        </div>
+        <div class="mb-3">
+            {% if bds %}
+            Ảnh ({{bds_images | count}}) (check để xóa)
+            <div class="row">
+                {% if bds_images %}
+                    {% for bdsImage in bds_images %}
+                    <div class="col-md-3 mb-3 position-relative">
+                        <img src="{{ url_for('static', filename='uploads/' + bdsImage.image.filename) }}" class="img-thumbnail" alt="{{ bdsImage.image.filename }}">
+                        <div class="position-absolute top-0 end-0 mt-3 me-4">
+                            <div class="form-check">
+                                <input class="form-check-input" style="transform: scale(2.0);" type="checkbox" value="{{ bdsImage.id }}" name="delete_images[]">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">Không có ảnh</div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="row mb-3">
+            <div class="col-4">
+                <label for="" class="form-label">Loại:</label>
+                <select class="form-control" name="type_id" required>
+                    <option value="">- Chọn loại -</option>
+                    {% for type in types %}
+                    <option value="{{ type.id }}" {% if bds and bds.type_id == type.id %}selected{% endif %}>{{ type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-4">
+                <label for="address" class="form-label">Tỉnh/Thành phố:</label>
+                <select class="form-control" name="province_id" id="province-select" required>
+                    <option value="">- Chọn Tỉnh/Thành phố -</option>
+                    {% for province in provinces %}
+                    <option value="{{ province.id }}" {% if bds and bds.province_id == province.id %}selected{% endif %}>{{ province.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-4">
+                <label for="address" class="form-label">Quận/Huyện:</label>
+                <select class="form-control" name="city_id" id="city-select" required>
+                    <option value="">- Chọn Quận/Huyện -</option>
+                    {% if bds %}
+                    {% for city in cities %}
+                    <option value="{{ city.id }}" {% if bds.city_id == city.id %}selected{% endif %}>{{ city.name }}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <label for="address" class="form-label">Địa chỉ:</label>
+                <input type="text" id="address" name="address" value="{{ bds.address }}" class="form-control" required>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-4">
+                <label for="price_from" class="form-label">Giá từ:</label>
+                <div class="input-group">
+                    <input type="number" class="form-control price-input" id="price_from" name="price_from" value="{% if bds %}{{ bds.price_from }}{% endif %}" required>
+
+                    <!-- <input type="radio" class="btn-check" name="btnradio1" id="btnradio1" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio1">Triệu</label>
+                  
+                    <input type="radio" class="btn-check" name="btnradio1" id="btnradio2" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio2">Tỷ</label> -->
+                </div>
+            </div>
+            <div class="col-4">
+                <label for="price_to" class="form-label">Đến:</label>
+                <div class="input-group">
+                    <input type="number" class="form-control price-input" id="price_to" name="price_to" value="{% if bds %}{{ bds.price_to }}{% endif %}" required>
+
+                    <!-- <input type="radio" class="btn-check" name="btnradio2" id="btnradio3" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio3">Triệu</label>
+                  
+                    <input type="radio" class="btn-check" name="btnradio2" id="btnradio4" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio4">Tỷ</label> -->
+                </div>
+            </div>
+            <div class="col-4">
+                <label class="form-label">Diện tích:</label>
+                <input class="form-control" type="number" name="area" value="{% if bds %}{{ bds.area }}{% endif %}" required>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-4">
+                <label class="form-label">Hướng:</label>
+                <select class="form-control" name="direction_id" required>
+                    <option value="">- Chọn hướng -</option>
+                    {% for direction in directions %}
+                    <option value="{{ direction.id }}" {% if bds and bds.direction_id == direction.id %}selected{% endif %}>{{ direction.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-4">
+                <label class="form-label">Đã bán:</label><br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="sold_flg" id="sold_flg1" value="1" {{ "checked" if bds.sold_flg else "" }}>
+                    <label class="form-check-label" for="sold_flg1">Đã bán</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="sold_flg" id="sold_flg0" value="0" {{ "checked" if not bds.sold_flg else "" }}>
+                    <label class="form-check-label" for="sold_flg0">Chưa bán</label>
+                </div>
+            </div>
+            <div class="col-4">
+                <label class="form-label">Trạng thái tin:</label><br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="published_flg" id="published_flg1" value="1" {{ "checked" if bds.published_flg else "" }}>
+                    <label class="form-check-label" for="published_flg1">Lưu nháp</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="published_flg" id="published_flg0" value="0" {{ "checked" if not bds.published_flg else "" }}>
+                    <label class="form-check-label" for="published_flg0">Đăng ngay</label>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Thêm/Chỉnh sửa User{% endblock %}
+
+{% block content %}
+<div class="container">
+  <form method="POST" action="{{ url_for('user.user_add_edit', user_id=user.id if user else None) }}">
+    <div class="row">
+        <div class="col-md-10">
+          <h2>{% if user %}Chỉnh sửa User{% else %}Thêm User{% endif %}</h2>
+        </div>
+        <div class="col-md-2">
+            <div class="d-flex justify-content-end mt-2">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+      <label for="name">Tên:</label>
+      <input type="text" class="form-control" id="name" name="name" value="{{ user.name if user else '' }}" placeholder="Tên">
+    </div>
+    <div class="form-group">
+      <label for="username">Tên đăng nhập:</label>
+      <input type="text" class="form-control" id="username" name="username" value="{{ user.username if user else '' }}" placeholder="Tên đăng nhập">
+    </div>
+    <div class="form-group">
+      <label for="password">Mật khẩu:</label>
+      <input type="password" class="form-control" id="password" name="password" value="{{ user.password if user else '' }}" placeholder="Mật khẩu">
+    </div>
+    <div class="form-group">
+      <label for="role">Quyền:</label>
+      <select class="form-select" name="role" id="role">
+        {% for role in roles %}
+          <option value="{{ role.id }}" {% if user and user.role_id == role.id %}selected{% endif %}>{{ role.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</div>
+{% endblock %}

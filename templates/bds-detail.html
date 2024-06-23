@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+<script>
+    $(document).ready(function() {
+        $('.carousel-item').each(function(index) {
+            $(this).attr('data-bs-slide-to', index);
+        });
+    
+        $('.col-md-2 img').click(function() {
+            var index = $(this).closest('.col-md-2').index();
+            $('#carouselExample').carousel(index);
+        });
+    
+        $('#carouselExample').on('slide.bs.carousel', function(event) {
+            var index = $(event.relatedTarget).index();
+            $('.col-md-2 img').removeClass('active-thumbnail');
+            $('.col-md-2 img').eq(index).addClass('active-thumbnail');
+        });
+    
+        // Gán class active-thumbnail cho ảnh hiện tại
+        var currentIndex = $('#carouselExample .carousel-item.active').index();
+        $('.col-md-2 img').eq(currentIndex).addClass('active-thumbnail');
+
+        $(".delete-btn").click(function(e) {
+            e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
+            
+            if (confirm("Bạn có chắc chắn muốn xóa?")) {
+            // Nếu người dùng xác nhận, chuyển hướng đến URL
+            window.location.href = $(this).attr("href");
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block title %}Thông tin Bds{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+      <div class="col-md-10">
+        <h1>Thông tin Bds</h1>
+      </div>
+      <div class="col-md-2">
+        <div class="d-flex justify-content-end mt-2">
+            <a href="{{ url_for('bds.bds_delete', bds_id=bds.id) }}" class="btn btn-danger delete-btn" style="margin-right: 5px;">Xóa</a>
+            <a href="{{ url_for('bds.bds_add_edit', bds_id=bds.id) }}" class="btn btn-primary">Sửa</a>
+        </div>
+      </div>
+    </div>
+    <table class="table">
+        <tr>
+            <th>ID</th>
+            <td>{{ bds.id }}</td>
+        </tr>
+        <tr>
+            <th>Ảnh ({{bds_images | count}})</th>
+            <td>
+                {% if bds %}
+                <div class="row">
+                    {% if bds_images %}
+                        {% for bdsImage in bds_images %}
+                        <div class="col-md-3 mb-3">
+                            <img src="{{ url_for('static', filename='uploads/' + bdsImage.image.filename) }}" class="img-thumbnail" alt="{{ bdsImage.image.filename }}">
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">Không có ảnh</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Loại</th>
+            <td>{{ bds_type.name }}</td>
+        </tr>
+        <tr>
+            <th>Địa chỉ</th>
+            <td>{{ bds.address }}</td>
+        </tr>
+        <tr>
+            <th>Đã bán</th>
+            <td>{{ bds.sold_flg }}</td>
+        </tr>
+        <tr>
+            <th>DEMO Carousel</th>
+            <td>
+                DEMO Carousel
+            </td>
+        </tr>
+        <tr>
+            <th>DEMO Map</th>
+            <td>
+                DEMO Map
+                <!-- 参考サイト：https://pypi.org/project/flask-googlemaps/ -->
+            </td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

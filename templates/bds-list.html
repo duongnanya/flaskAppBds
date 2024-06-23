@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+<script>
+    function resetSearchInput() {
+      document.querySelector('input[name="search_keyword"]').value = '';
+    }
+
+    $(".clear-search").click(function() {
+      $("input[name='search_keyword']").val("");
+    });
+</script>
+{% endblock %}
+
+{% block title %}Danh sách Bds{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-10">
+      <h1>Danh sách Bds</h1>
+    </div>
+    <div class="col-md-2">
+      <div class="d-flex justify-content-end mt-2">
+        <a class="btn btn-primary" href="{{ url_for('bds.bds_add_edit') }}">Thêm Bds</a>
+      </div>
+    </div>
+  </div>
+  <form action="{{ url_for('bds.bds_search') }}" method="POST" class="mb-3">
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" name="search_keyword" placeholder="Tiêu đề, Nội dung" aria-label="Search" value="{{ search_keyword }}" required>
+      <button class="btn btn-outline-secondary clear-search" type="button">✕</button>
+      <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+    </div>
+  </form>
+
+  <table class="table bds-list">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Ảnh</th>
+        <th>Tiêu đề</th>
+        <th>Nội dung</th>
+        <th>Loại BĐS</th>
+        <th>Giá thấp</th>
+        <th>Giá cao</th>
+        <th>Diện tích (m3)</th>
+        <th>Đã bán</th>
+        <th>Đã đăng</th>
+        <th>Chi tiết</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bds_item in bds_data %}
+      <tr>
+          <td>{{ bds_item.bds.id }}</td>
+          <td>
+              {% if bds_item.first_image_url %}
+              <img src="{{ bds_item.first_image_url }}" alt="{{ bds_item.bds.title }}" style="max-width: 100px;">
+              {% else %}
+              No image
+              {% endif %}
+          </td>
+          <td>{{ bds_item.bds.title }}</td>
+          <td>{{ bds_item.bds.content|truncate(20) }}</td>
+          <td>{{ bds_item.bds_type.name }}</td>
+          <!-- TODO làm hiển thị tỷ, triệu, nghìn -->
+          <td>{{ bds_item.bds.price_from }}</td>
+          <td>{{ bds_item.bds.price_to }}</td>
+          <td>{{ bds_item.bds.area }}</td>
+          <td>{{ bds_item.bds.sold_flg }}</td>
+          <td>{{ bds_item.bds.published_flg }}</td>
+          <td>
+              <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}" class="btn btn-primary">Xem</a>
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
