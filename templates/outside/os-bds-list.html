@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+  <script>
+    //--- Tìm Cities tương ứng Provinces
+    $('#province-select').on('change', function() {
+        var provinceId = $(this).val();
+        $.ajax({
+            url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+            type: 'GET',
+            success: function(data) {
+                $('#city-select').empty();
+                $('#city-select').append('<option value="">- Chọn thành phố / huyện -</option>');
+                $.each(data, function(index, city) {
+                    $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
+                });
+                // Chọn option đầu tiên nếu có dữ liệu
+                if (data.length > 0) {
+                    $('#city-select').val(data[0].id);
+                }
+            }
+        });
+    });
+  </script>
+{% endblock %}
+
+{% block title %}Danh sách Bds{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Danh sách Bds</h1>
+    </div>
+  </div>
+  <form action="{{ url_for('bds.os_bds_search') }}" method="POST" class="mb-3">
+    <div class="row mb-3">
+        <div class="col-4">
+            <label for="type-select" class="form-label">Loại:</label>
+            <select class="form-control" name="type-select" id="type-select">
+                <option value="">- Chọn loại -</option>
+                {% for type in types %}
+                <option value="{{ type.id }}" {% if selected_type_id == type.id|string %}selected{% endif %}>{{ type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-4">
+            <label for="province-select" class="form-label">Tỉnh/Thành phố:</label>
+            <select class="form-control" name="province-select" id="province-select">
+                <option value="">- Chọn Tỉnh/Thành phố -</option>
+                {% for province in provinces %}
+                <option value="{{ province.id }}" {% if selected_province_id == province.id|string %}selected{% endif %}>{{ province.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-4">
+            <label for="city-select" class="form-label">Quận/Huyện:</label>
+            <select class="form-control" name="city-select" id="city-select">
+                <option value="">- Chọn Quận/Huyện -</option>
+                {% for city in cities %}
+                <option value="{{ city.id }}" {% if selected_city_id == city.id|string %}selected{% endif %}>{{ city.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-4">
+            <label for="pricerange-select" class="form-label">Mức giá:</label>
+            <select class="form-control" name="price-range-select" id="price-range-select">
+                <option value="">- Chọn mức giá -</option>
+                {% for priceRange in priceRanges %}
+                <option value="{{ priceRange.id }}" {% if selected_price_range_id == priceRange.id|string %}selected{% endif %}>{{ priceRange.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-4">
+            <label for="arearange-select" class="form-label">Diện tích:</label>
+            <select class="form-control" name="area-range-select" id="area-range-select">
+                <option value="">- Chọn diện tích -</option>
+                {% for areaRange in areaRanges %}
+                <option value="{{ areaRange.id }}" {% if selected_area_range_id == areaRange.id|string %}selected{% endif %}>{{ areaRange.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-4">
+            <label for="direction-select" class="form-label">Hướng:</label>
+            <select class="form-control" name="direction-select" id="direction-select">
+                <option value="">- Chọn hướng -</option>
+                {% for direction in directions %}
+                <option value="{{ direction.id }}" {% if selected_direction_id == direction.id|string %}selected{% endif %}>{{ direction.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+  </form>
+
+  <div class="row">
+    {% if bds_data %}
+    {% for bds_item in bds_data %}
+    <div class="col-md-3 mb-4">
+      <div class="card">
+        <div class="card-img-top-wrapper position-relative">
+          {% if bds_item.first_image_url %}
+          <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
+          {% else %}
+          <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
+          {% endif %}
+          {% if bds_item.remaining_images_count > 0 %}
+          <div class="position-absolute top-0 end-0 mt-3 me-4">
+            <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
+          </div>
+          {% endif %}
+          <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+            <i class="bi bi-heart heart-icon text-danger" style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
+            <h5 class="card-title">{{ bds_item.bds.title }}</h5>
+          </a>
+          <p class="card-text">
+            {{ bds_item.bds_type.name }}<br>
+            {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
+            {{ bds_item.bds_city.name }}, {{ bds_item.bds_province.name }}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-md-12 mb-4">Không có BĐS phù hợp</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

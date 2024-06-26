@@ -29,12 +29,12 @@ def admin_editor_required(func):
     return decorated_view
 
 
-def format_currency(value):
-    if value >= 1000000000:
-        return f"{value / 1000000000:.1f} tỷ"
-    elif value >= 1000000:
-        return f"{value / 1000000:.1f} triệu"
-    elif value >= 1000:
-        return f"{value / 1000:.1f} nghìn"
-    else:
-        return str(value)
+# def format_currency(value):
+#     if value >= 1000000000:
+#         return f"{value / 1000000000:.1f} tỷ"
+#     elif value >= 1000000:
+#         return f"{value / 1000000:.1f} triệu"
+#     elif value >= 1000:
+#         return f"{value / 1000:.1f} nghìn"
+#     else:
+#         return str(value)

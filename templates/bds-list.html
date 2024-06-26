@@ -47,6 +47,9 @@
         <th>Diện tích (m3)</th>
         <th>Đã bán</th>
         <th>Đã đăng</th>
+        <th>Địa chỉ</th>
+        <th>Quận/huyện</th>
+        <th>Tỉnh/thành</th>
         <th>Chi tiết</th>
       </tr>
     </thead>
@@ -70,6 +73,9 @@
           <td>{{ bds_item.bds.area }}</td>
           <td>{{ bds_item.bds.sold_flg }}</td>
           <td>{{ bds_item.bds.published_flg }}</td>
+          <td>{{ bds_item.bds.address }}</td>
+          <td>{{ bds_item.bds_city.name }}</td>
+          <td>{{ bds_item.bds_province.name }}</td>
           <td>
               <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}" class="btn btn-primary">Xem</a>
           </td>

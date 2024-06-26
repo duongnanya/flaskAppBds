@@ -1,0 +1,21 @@
+body {
+  overflow: scroll;
+}
+
+.card-img-top {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heart-icon {
+  transition: content 0.3s ease-in-out;
+}

@@ -11,6 +11,7 @@
             }
         });
 
+        // Tìm Cities tương ứng Provinces
         $('#province-select').on('change', function() {
             var provinceId = $(this).val();
             $.ajax({
@@ -34,12 +35,12 @@
         // khi edit (focus), thì hiện số đầy đủ
         // khi không edit, thì hiện đơn vị
         // ví dụ
-
         // 1000 thì hiện 1 Nghìn
         // 2000000 thì hiện 2 Triệu
         // 2100000 thì hiện 2.1 Triệu
         // 3000000000 thì hiện 3 Tỷ
         // 3210000000 thì hiện 3.21 Tỷ
+
     </script>
 {% endblock %}
 
@@ -88,7 +89,7 @@
         <div class="row mb-3">
             <div class="col-4">
                 <label for="" class="form-label">Loại:</label>
-                <select class="form-control" name="type_id" required>
+                <select class="form-control" name="type-id" required>
                     <option value="">- Chọn loại -</option>
                     {% for type in types %}
                     <option value="{{ type.id }}" {% if bds and bds.type_id == type.id %}selected{% endif %}>{{ type.name }}</option>
@@ -97,7 +98,7 @@
             </div>
             <div class="col-4">
                 <label for="address" class="form-label">Tỉnh/Thành phố:</label>
-                <select class="form-control" name="province_id" id="province-select" required>
+                <select class="form-control" name="province-id" id="province-select" required>
                     <option value="">- Chọn Tỉnh/Thành phố -</option>
                     {% for province in provinces %}
                     <option value="{{ province.id }}" {% if bds and bds.province_id == province.id %}selected{% endif %}>{{ province.name }}</option>
@@ -106,7 +107,7 @@
             </div>
             <div class="col-4">
                 <label for="address" class="form-label">Quận/Huyện:</label>
-                <select class="form-control" name="city_id" id="city-select" required>
+                <select class="form-control" name="city-id" id="city-select" required>
                     <option value="">- Chọn Quận/Huyện -</option>
                     {% if bds %}
                     {% for city in cities %}
@@ -124,9 +125,9 @@
         </div>
         <div class="row mb-3">
             <div class="col-4">
-                <label for="price_from" class="form-label">Giá từ:</label>
+                <label for="price-from" class="form-label">Giá từ:</label>
                 <div class="input-group">
-                    <input type="number" class="form-control price-input" id="price_from" name="price_from" value="{% if bds %}{{ bds.price_from }}{% endif %}" required>
+                    <input type="number" class="form-control price-input" id="price-from" name="price-from" value="{% if bds %}{{ bds.price_from }}{% endif %}" required>
 
                     <!-- <input type="radio" class="btn-check" name="btnradio1" id="btnradio1" autocomplete="off">
                     <label class="btn btn-outline-primary" for="btnradio1">Triệu</label>
@@ -136,9 +137,9 @@
                 </div>
             </div>
             <div class="col-4">
-                <label for="price_to" class="form-label">Đến:</label>
+                <label for="price-to" class="form-label">Đến:</label>
                 <div class="input-group">
-                    <input type="number" class="form-control price-input" id="price_to" name="price_to" value="{% if bds %}{{ bds.price_to }}{% endif %}" required>
+                    <input type="number" class="form-control price-input" id="price-to" name="price-to" value="{% if bds %}{{ bds.price_to }}{% endif %}" required>
 
                     <!-- <input type="radio" class="btn-check" name="btnradio2" id="btnradio3" autocomplete="off">
                     <label class="btn btn-outline-primary" for="btnradio3">Triệu</label>
@@ -155,7 +156,7 @@
         <div class="row mb-3">
             <div class="col-4">
                 <label class="form-label">Hướng:</label>
-                <select class="form-control" name="direction_id" required>
+                <select class="form-control" name="direction-id" required>
                     <option value="">- Chọn hướng -</option>
                     {% for direction in directions %}
                     <option value="{{ direction.id }}" {% if bds and bds.direction_id == direction.id %}selected{% endif %}>{{ direction.name }}</option>
@@ -165,23 +166,23 @@
             <div class="col-4">
                 <label class="form-label">Đã bán:</label><br>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="sold_flg" id="sold_flg1" value="1" {{ "checked" if bds.sold_flg else "" }}>
+                    <input class="form-check-input" type="radio" name="sold-flg" id="sold_flg1" value="1" {{ "checked" if bds.sold_flg else "" }}>
                     <label class="form-check-label" for="sold_flg1">Đã bán</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="sold_flg" id="sold_flg0" value="0" {{ "checked" if not bds.sold_flg else "" }}>
+                    <input class="form-check-input" type="radio" name="sold-flg" id="sold_flg0" value="0" {{ "checked" if not bds.sold_flg else "" }}>
                     <label class="form-check-label" for="sold_flg0">Chưa bán</label>
                 </div>
             </div>
             <div class="col-4">
                 <label class="form-label">Trạng thái tin:</label><br>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="published_flg" id="published_flg1" value="1" {{ "checked" if bds.published_flg else "" }}>
-                    <label class="form-check-label" for="published_flg1">Lưu nháp</label>
+                    <input class="form-check-input" type="radio" name="published-flg" id="published-flg1" value="1" {{ "checked" if bds.published_flg else "" }}>
+                    <label class="form-check-label" for="published-flg1">Lưu nháp</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="published_flg" id="published_flg0" value="0" {{ "checked" if not bds.published_flg else "" }}>
-                    <label class="form-check-label" for="published_flg0">Đăng ngay</label>
+                    <input class="form-check-input" type="radio" name="published-flg" id="published-flg0" value="0" {{ "checked" if not bds.published_flg else "" }}>
+                    <label class="form-check-label" for="published-flg0">Đăng ngay</label>
                 </div>
             </div>
         </div>

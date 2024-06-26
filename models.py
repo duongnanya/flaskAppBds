@@ -225,3 +225,44 @@ class BdsUserRelation(db.Model):
         self.user_id = user_id
         self.created_user_id = created_user_id
         self.update_user_id = update_user_id
+
+class PriceRange(db.Model):
+    __tablename__ = "m_price_range"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    price_from = db.Column(db.Numeric(precision=18, scale=2), nullable=False)
+    price_to = db.Column(db.Numeric(precision=18, scale=2), nullable=False)
+    created_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    created_user_id = db.Column(db.Integer)
+    update_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, name, price_from, price_to, created_user_id=None, update_user_id=None):
+        self.name = name
+        self.price_from = price_from
+        self.price_to = price_to
+        self.created_user_id = created_user_id
+        self.update_user_id = update_user_id
+
+
+class AreaRange(db.Model):
+    __tablename__ = "m_area_range"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    area_from = db.Column(db.Integer, nullable=False)
+    area_to = db.Column(db.Integer, nullable=False)
+    created_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    created_user_id = db.Column(db.Integer)
+    update_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, name, area_from, area_to, created_user_id=None, update_user_id=None):
+        self.name = name
+        self.area_from = area_from
+        self.area_to = area_to
+        self.created_user_id = created_user_id
+        self.update_user_id = update_user_id
