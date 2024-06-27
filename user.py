@@ -53,7 +53,7 @@ def user_add_edit():
                 username=username,
                 password=password,
                 role_id=role_id,
-                created_user_id=current_user.id,
+                create_user_id=current_user.id,
                 update_user_id=current_user.id,
             )
             db.session.add(new_user)

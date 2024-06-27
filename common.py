@@ -27,7 +27,7 @@ def handle_imported_file():
         new_province = Province(
             name=province,
             description="",
-            created_user_id=current_user.id,
+            create_user_id=current_user.id,
             update_user_id=current_user.id,
         )
         db.session.add(new_province)
@@ -40,7 +40,7 @@ def handle_imported_file():
             name=row["Thành phố / Huyện"],
             description="",
             province_id=province.id,
-            created_user_id=current_user.id,
+            create_user_id=current_user.id,
             update_user_id=current_user.id,
         )
         db.session.add(new_city)

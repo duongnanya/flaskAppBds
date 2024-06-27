@@ -93,7 +93,10 @@ def bds_detail(bds_id):
         is not None
     )
 
-    if current_user.role_id == Config.ROLE_ADMIN or current_user.role_id == Config.ROLE_EDITOR:
+    if (
+        current_user.role_id == Config.ROLE_ADMIN
+        or current_user.role_id == Config.ROLE_EDITOR
+    ):
         # Hiển thị trang bds-detail.html cho admin/editor
         return render_template(
             "bds-detail.html",
@@ -177,7 +180,7 @@ def bds_add_edit():
                 area=area,
                 sold_flg=sold_flg,
                 published_flg=published_flg,
-                created_user_id=current_user.id,
+                create_user_id=current_user.id,
                 update_user_id=current_user.id,
             )
             db.session.add(new_bds)
@@ -205,7 +208,7 @@ def bds_add_edit():
 
                 img = Image(
                     filename=filename,
-                    created_user_id=current_user.id,
+                    create_user_id=current_user.id,
                     update_user_id=current_user.id,
                 )
                 db.session.add(img)
@@ -217,7 +220,7 @@ def bds_add_edit():
             bdsImg = BdsImage(
                 bds_id=bds.id,
                 img_id=img_id,
-                created_user_id=current_user.id,
+                create_user_id=current_user.id,
                 update_user_id=current_user.id,
             )
             db.session.add(bdsImg)
@@ -374,7 +377,9 @@ def get_bds_data(query):
         else:
             first_image_url = None
 
-        remaining_images_count = BdsImage.query.filter_by(bds_id=bds.id, del_flg=False).count() - 1
+        remaining_images_count = (
+            BdsImage.query.filter_by(bds_id=bds.id, del_flg=False).count() - 1
+        )
 
         bds_type = Type.query.get(bds.type_id)
         bds_city = City.query.get(bds.city_id)
@@ -440,7 +445,7 @@ def toggle_favorite(bds_id):
         new_relation = BdsUserRelation(
             user_id=current_user.id,
             bds_id=bds_id,
-            created_user_id=current_user.id,
+            create_user_id=current_user.id,
             update_user_id=current_user.id,
         )
         db.session.add(new_relation)
