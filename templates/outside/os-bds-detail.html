@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+<script>
+  //--- Click Heart để lưu/quan tâm
+  // Kiểm tra trạng thái ban đầu của icon heart/heart-fill
+  $(".bds-favorite").each(function() {
+    var bdsId = $(this).data("bds-id");
+    checkFavoriteStatus(bdsId, $(this));
+  });
+
+  // Xử lý sự kiện click vào icon heart/heart-fill
+  $(".bds-favorite").click(function() {
+    var bdsId = $(this).data("bds-id");
+    var $icon = $(this);
+    toggleFavoriteStatus(bdsId, $icon);
+  });
+
+  function toggleFavoriteStatus(bdsId, $icon) {
+    $.ajax({
+      url: "{{ url_for('bds.toggle_favorite', bds_id='-1') }}".replace("-1", bdsId),
+      type: "POST",
+      success: function(data) {
+        if (data.success) {
+          if (data.is_favorite) {
+            $icon.removeClass("bi-heart").addClass("bi-heart-fill");
+          } else {
+            $icon.removeClass("bi-heart-fill").addClass("bi-heart");
+          }
+        } else {
+          alert("Có lỗi xảy ra. Vui lòng thử lại.");
+        }
+      },
+      error: function() {
+        alert("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+    });
+  };
+
+  function checkFavoriteStatus(bdsId, $icon) {
+    $.ajax({
+      url: "{{ url_for('bds.check_favorite', bds_id='-1') }}".replace("-1", bdsId),
+      type: "GET",
+      success: function(data) {
+        if (data.is_favorite) {
+          $icon.removeClass("bi-heart").addClass("bi-heart-fill");
+        } else {
+          $icon.removeClass("bi-heart-fill").addClass("bi-heart");
+        }
+      },
+      error: function() {
+        alert("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+    });
+  };
+</script>
+{% endblock %}
+
+{% block title %}{{ bds.title }}{% endblock %}
+
+{% block content %}
+<div class="container os-bds-detail-html my-5">
+  <div class="row">
+    <div class="col-8 col-md-8">
+      <div class="col-12 col-md-12">
+        <div id="bds-images-carousel" class="carousel slide mb-2" data-ride="carousel">
+          <div class="carousel-inner">
+            {% for bds_image in bds_images %}
+            {% set image = bds_image.image %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="d-block w-100" alt="{{ image.filename }}">
+            </div>
+            {% endfor %}
+          </div>
+          {% if bds_images|length > 1 %}
+          <button class="carousel-control-prev" type="button" data-bs-target="#bds-images-carousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#bds-images-carousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+          </button>
+          {% endif %}
+
+          <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+              <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
+                 style="font-size: 1.5rem;" data-bds-id="{{ bds.id }}">
+              </i>
+          </div>
+        </div>
+        <div class="row">
+          {% for bds_image in bds_images %}
+          <div class="col-md-3 mb-3">
+            <img src="{{ url_for('static', filename='uploads/' + bds_image.image.filename) }}" class="img-thumbnail" alt="{{ bds_image.image.filename }}">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-12 col-md-12">
+          <h3 class="mb-3">{{ bds.title }}</h3>
+          <p class="mb-2"><strong>Loại BĐS:</strong> {{ bds_type.name }}</p>
+          <p class="mb-2"><strong>Địa chỉ:</strong> {{ address }}</p>
+          <p class="mb-2"><strong>Giá:</strong> {{ price_from }} - {{ price_to }}</p>
+          <p class="mb-2"><strong>Diện tích:</strong> {{ bds.area }} m²</p>
+          <p class="mb-2"><strong>Tỉnh/Thành phố:</strong> {{ bds_province.name }} - {{ bds_city.name }}</p>
+          <p class="mb-2"><strong>Hướng:</strong> {{ bds.direction.name }}</p>
+          <p class="mb-3">{{ bds.content }}</p>
+      </div>
+    </div>
+    <div class="col-4 col-md-4">
+      <img src="{{ url_for('static', filename='uploads/LAT-bds.jpg') }}" 
+      class=""  alt="LAT" style="width: -webkit-fill-available;">
+    </div>
+  </div>
+</div>
+{% endblock %}

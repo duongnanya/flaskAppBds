@@ -16,6 +16,7 @@ from flask_login import current_user, login_required
 from models import (
     Bds,
     BdsImage,
+    BdsUserRelation,
     City,
     Direction,
     Image,
@@ -79,12 +80,44 @@ def bds_detail(bds_id):
     # Lấy thông tin Type
     bds_type = Type.query.get(bds.type_id)
 
-    return render_template(
-        "bds-detail.html",
-        bds_images=bds_images,
-        bds=bds,
-        bds_type=bds_type,
+    # Lấy thông tin City
+    bds_city = City.query.get(bds.city_id)
+
+    # Lấy thông tin Province
+    bds_province = Province.query.get(bds.province_id)
+
+    is_favorite = (
+        BdsUserRelation.query.filter_by(
+            user_id=current_user.id, bds_id=bds.id, del_flg=False
+        ).first()
+        is not None
     )
+
+    if current_user.role_id == Config.ROLE_ADMIN or current_user.role_id == Config.ROLE_EDITOR:
+        # Hiển thị trang bds-detail.html cho admin/editor
+        return render_template(
+            "bds-detail.html",
+            bds_images=bds_images,
+            bds=bds,
+            bds_type=bds_type,
+            bds_city=bds_city,
+            bds_province=bds_province,
+            is_favorite=is_favorite,
+        )
+    else:
+        # Hiển thị trang os-bds-detail.html cho người dùng có Role = 3
+        return render_template(
+            "outside/os-bds-detail.html",
+            bds_images=bds_images,
+            bds=bds,
+            bds_type=bds_type,
+            bds_city=bds_city,
+            bds_province=bds_province,
+            address=bds.address,
+            price_from=format_currency(bds.price_from),
+            price_to=format_currency(bds.price_to),
+            is_favorite=is_favorite,
+        )
 
 
 @bds_bp.route("/bds_add_edit", methods=["GET", "POST"])
@@ -347,6 +380,13 @@ def get_bds_data(query):
         bds_city = City.query.get(bds.city_id)
         bds_province = Province.query.get(bds.province_id)
 
+        is_favorite = (
+            BdsUserRelation.query.filter_by(
+                user_id=current_user.id, bds_id=bds.id, del_flg=False
+            ).first()
+            is not None
+        )
+
         bds_data.append(
             {
                 "bds": bds,
@@ -358,6 +398,7 @@ def get_bds_data(query):
                 "address": bds.address,
                 "price_from": format_currency(bds.price_from),
                 "price_to": format_currency(bds.price_to),
+                "is_favorite": is_favorite,
             }
         )
     return bds_data
@@ -380,3 +421,37 @@ def format_currency(value):
             return f"{value // 1000} nghìn"
     else:
         return str(int(value))
+
+
+# lưu/xóa yêu thích Bds
+@bds_bp.route("/toggle_favorite/<int:bds_id>", methods=["POST"])
+@login_required
+def toggle_favorite(bds_id):
+    bds_relation = BdsUserRelation.query.filter_by(
+        user_id=current_user.id, bds_id=bds_id, del_flg=False
+    ).first()
+
+    if bds_relation:
+        bds_relation.del_flg = True
+        db.session.add(bds_relation)
+        db.session.commit()
+        return jsonify({"success": True, "is_favorite": False})
+    else:
+        new_relation = BdsUserRelation(
+            user_id=current_user.id,
+            bds_id=bds_id,
+            created_user_id=current_user.id,
+            update_user_id=current_user.id,
+        )
+        db.session.add(new_relation)
+        db.session.commit()
+        return jsonify({"success": True, "is_favorite": True})
+
+
+@bds_bp.route("/check_favorite/<int:bds_id>", methods=["GET"])
+@login_required
+def check_favorite(bds_id):
+    bds_relation = BdsUserRelation.query.filter_by(
+        user_id=current_user.id, bds_id=bds_id, del_flg=False
+    ).first()
+    return jsonify({"is_favorite": bool(bds_relation)})

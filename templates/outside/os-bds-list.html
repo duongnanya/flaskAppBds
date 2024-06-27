@@ -21,13 +21,65 @@
             }
         });
     });
+    
+    //--- Click Heart để lưu/quan tâm
+    // Kiểm tra trạng thái ban đầu của icon heart/heart-fill
+    $(".bds-favorite").each(function() {
+      var bdsId = $(this).data("bds-id");
+      checkFavoriteStatus(bdsId, $(this));
+    });
+
+    // Xử lý sự kiện click vào icon heart/heart-fill
+    $(".bds-favorite").click(function() {
+      var bdsId = $(this).data("bds-id");
+      var $icon = $(this);
+      toggleFavoriteStatus(bdsId, $icon);
+    });
+
+    function toggleFavoriteStatus(bdsId, $icon) {
+      $.ajax({
+        url: "{{ url_for('bds.toggle_favorite', bds_id='-1') }}".replace("-1", bdsId),
+        type: "POST",
+        success: function(data) {
+          if (data.success) {
+            if (data.is_favorite) {
+              $icon.removeClass("bi-heart").addClass("bi-heart-fill");
+            } else {
+              $icon.removeClass("bi-heart-fill").addClass("bi-heart");
+            }
+          } else {
+            alert("Có lỗi xảy ra. Vui lòng thử lại.");
+          }
+        },
+        error: function() {
+          alert("Có lỗi xảy ra. Vui lòng thử lại.");
+        }
+      });
+    };
+
+    function checkFavoriteStatus(bdsId, $icon) {
+      $.ajax({
+        url: "{{ url_for('bds.check_favorite', bds_id='-1') }}".replace("-1", bdsId),
+        type: "GET",
+        success: function(data) {
+          if (data.is_favorite) {
+            $icon.removeClass("bi-heart").addClass("bi-heart-fill");
+          } else {
+            $icon.removeClass("bi-heart-fill").addClass("bi-heart");
+          }
+        },
+        error: function() {
+          alert("Có lỗi xảy ra. Vui lòng thử lại.");
+        }
+      });
+    };
   </script>
 {% endblock %}
 
 {% block title %}Danh sách Bds{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container os-bds-list-html">
   <div class="row">
     <div class="col-md-12">
       <h1>Danh sách Bds</h1>
@@ -112,7 +164,9 @@
           </div>
           {% endif %}
           <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-            <i class="bi bi-heart heart-icon text-danger" style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}"></i>
+            <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
+                style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
+            </i>
           </div>
         </div>
         <div class="card-body">
