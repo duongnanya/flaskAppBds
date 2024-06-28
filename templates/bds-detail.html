@@ -74,7 +74,12 @@
         </tr>
         <tr>
             <th>Loại</th>
-            <td>{{ bds_type.name }}</td>
+            <td>
+                ({{ bds_types|count }})
+                {% for bds_type in bds_types %}
+                    {{ bds_type.name }}{% if not loop.last %} / {% endif %}
+                {% endfor %}
+            </td>
         </tr>
         <tr>
             <th>Địa chỉ</th>

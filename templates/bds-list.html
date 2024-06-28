@@ -66,10 +66,14 @@
           </td>
           <td>{{ bds_item.bds.title }}</td>
           <td>{{ bds_item.bds.content|truncate(20) }}</td>
-          <td>{{ bds_item.bds_type.name }}</td>
-          <!-- TODO làm hiển thị tỷ, triệu, nghìn -->
-          <td>{{ bds_item.bds.price_from }}</td>
-          <td>{{ bds_item.bds.price_to }}</td>
+          <td>
+            ({{ bds_item.bds_types|count }})
+            {% for bds_type in bds_item.bds_types %}
+                {{ bds_type.name }}{% if not loop.last %} / {% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ bds_item.price_from }}</td>
+          <td>{{ bds_item.price_to }}</td>
           <td>{{ bds_item.bds.area }}</td>
           <td>{{ bds_item.bds.sold_flg }}</td>
           <td>{{ bds_item.bds.published_flg }}</td>

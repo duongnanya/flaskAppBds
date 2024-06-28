@@ -1,47 +1,63 @@
 {% extends 'base.html' %}
 
 {% block dnnScript %}
-    <script>
-        $('input[type="checkbox"][name="delete_images[]"]').change(function() {
-            var $imageContainer = $(this).closest('.col-md-3');
-            if ($(this).is(':checked')) {
-                $imageContainer.find('img').addClass('opacity-50');
-            } else {
-                $imageContainer.find('img').removeClass('opacity-50');
+<script>
+    //--- hiệu ứng mờ khi chọn ảnh (để xóa khi Edit)
+    $('input[type="checkbox"][name="delete_images[]"]').change(function() {
+        var $imageContainer = $(this).closest('.col-md-3');
+        if ($(this).is(':checked')) {
+            $imageContainer.find('img').addClass('opacity-50');
+        } else {
+            $imageContainer.find('img').removeClass('opacity-50');
+        }
+    });
+
+    //--- Tìm Cities tương ứng Provinces
+    $('#province-select').on('change', function() {
+        var provinceId = $(this).val();
+        $.ajax({
+            url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+            type: 'GET',
+            success: function(data) {
+                $('#city-select').empty();
+                $('#city-select').append('<option value="">- Chọn thành phố / huyện -</option>');
+                $.each(data, function(index, city) {
+                    $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
+                });
+                // Chọn option đầu tiên nếu có dữ liệu
+                if (data.length > 0) {
+                    $('#city-select').val(data[0].id);
+                }
             }
         });
+    });
 
-        // Tìm Cities tương ứng Provinces
-        $('#province-select').on('change', function() {
-            var provinceId = $(this).val();
-            $.ajax({
-                url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
-                type: 'GET',
-                success: function(data) {
-                    $('#city-select').empty();
-                    $('#city-select').append('<option value="">- Chọn thành phố / huyện -</option>');
-                    $.each(data, function(index, city) {
-                        $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
-                    });
-                    // Chọn option đầu tiên nếu có dữ liệu
-                    if (data.length > 0) {
-                        $('#city-select').val(data[0].id);
-                    }
-                }
-            });
-        });
+    //--- hiển thị tên Type được chọn trên Dropdown
+    var $dropdown = $('.dropdown');
+    var $button = $dropdown.find('#type-dropdown');
+    var $checkboxes = $dropdown.find('input[type="checkbox"]');
 
-        // TODO viết jquery để
-        // khi edit (focus), thì hiện số đầy đủ
-        // khi không edit, thì hiện đơn vị
-        // ví dụ
-        // 1000 thì hiện 1 Nghìn
-        // 2000000 thì hiện 2 Triệu
-        // 2100000 thì hiện 2.1 Triệu
-        // 3000000000 thì hiện 3 Tỷ
-        // 3210000000 thì hiện 3.21 Tỷ
+    function updateButtonText() {
+        var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
+        var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
 
-    </script>
+        if (checkedCount === 0) {
+            $button.text('Chọn loại');
+        } else if (checkedCount === 1) {
+            $button.text(firstCheckedLabel);
+        } else {
+            $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
+        }
+    }
+
+    $checkboxes.on('change', function() {
+        updateButtonText();
+    });
+
+    // Cập nhật nội dung của button ngay khi trang được load
+    updateButtonText();
+
+</script>
 {% endblock %}
 
 {% block title %}Thêm/Chỉnh sửa Bds{% endblock %}
@@ -88,13 +104,35 @@
         </div>
         <div class="row mb-3">
             <div class="col-4">
-                <label for="" class="form-label">Loại:</label>
-                <select class="form-control" name="type-id" required>
-                    <option value="">- Chọn loại -</option>
-                    {% for type in types %}
-                    <option value="{{ type.id }}" {% if bds and bds.type_id == type.id %}selected{% endif %}>{{ type.name }}</option>
-                    {% endfor %}
-                </select>
+                <label for="" class="form-label">Loại BĐS:</label>
+                <div class="dropdown">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                      Chọn loại
+                    </button>
+                    <div class="dropdown-menu p-4 col-12">
+                        <p>(Có thể chọn nhiều)</p>
+                        {% if bds %}
+                        <ul class="list-group">
+                            {% for type in types %}
+                            <li class="list-group-item">
+                                <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}"
+                                    {% if type in bds.bds_type_relations|map(attribute='type') %}checked{% endif %}>
+                                <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <ul class="list-group">
+                            {% for type in types %}
+                            <li class="list-group-item">
+                                <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}">
+                                <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
             <div class="col-4">
                 <label for="address" class="form-label">Tỉnh/Thành phố:</label>

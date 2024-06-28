@@ -246,7 +246,6 @@ class PriceRange(db.Model):
         self.create_user_id = create_user_id
         self.update_user_id = update_user_id
 
-
 class AreaRange(db.Model):
     __tablename__ = "c_area_range"
 
@@ -264,5 +263,26 @@ class AreaRange(db.Model):
         self.name = name
         self.area_from = area_from
         self.area_to = area_to
+        self.create_user_id = create_user_id
+        self.update_user_id = update_user_id
+
+class BdsTypeRelation(db.Model):
+    __tablename__ = "r_bds_type"
+
+    id = db.Column(db.Integer, primary_key=True)
+    bds_id = db.Column(db.Integer, db.ForeignKey("m_bds.id"), nullable=False)
+    type_id = db.Column(db.Integer, db.ForeignKey("c_type.id"), nullable=False)
+    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    create_user_id = db.Column(db.Integer, nullable=False)
+    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer, nullable=False)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    bds = db.relationship("Bds", backref="bds_type_relations")
+    type = db.relationship("Type", backref="bds_type_relations")
+
+    def __init__(self, bds_id, type_id, create_user_id, update_user_id):
+        self.bds_id = bds_id
+        self.type_id = type_id
         self.create_user_id = create_user_id
         self.update_user_id = update_user_id

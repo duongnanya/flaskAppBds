@@ -11,11 +11,13 @@ from flask import (
     url_for,
     session,
 )
+from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 from models import (
     Bds,
     BdsImage,
+    BdsTypeRelation,
     BdsUserRelation,
     City,
     Direction,
@@ -55,6 +57,15 @@ def bds_list():
 
         bdses = Bds.query.filter_by(published_flg=True, del_flg=False).all()
         bds_data = get_bds_data(bdses)
+
+        # Lấy thông tin Type cho mỗi BĐS
+        bds_types = []
+        for bds in bdses:
+            bds_types_for_bds = Type.query.join(BdsTypeRelation).\
+                filter(BdsTypeRelation.bds_id == bds.id, BdsTypeRelation.del_flg == False, Type.del_flg == False).\
+                all()
+            bds_types.append(bds_types_for_bds)
+
         return render_template(
             "outside/os-bds-list.html",
             bds_data=bds_data,
@@ -64,6 +75,7 @@ def bds_list():
             priceRanges=priceRanges,
             areaRanges=areaRanges,
             directions=directions,
+            bds_types=bds_types,
         )
 
 
@@ -78,7 +90,9 @@ def bds_detail(bds_id):
     )
 
     # Lấy thông tin Type
-    bds_type = Type.query.get(bds.type_id)
+    bds_types = Type.query.join(BdsTypeRelation).\
+        filter(BdsTypeRelation.bds_id == bds.id, BdsTypeRelation.del_flg == False, Type.del_flg == False).\
+        all()
 
     # Lấy thông tin City
     bds_city = City.query.get(bds.city_id)
@@ -102,7 +116,7 @@ def bds_detail(bds_id):
             "bds-detail.html",
             bds_images=bds_images,
             bds=bds,
-            bds_type=bds_type,
+            bds_types=bds_types,
             bds_city=bds_city,
             bds_province=bds_province,
             is_favorite=is_favorite,
@@ -113,7 +127,7 @@ def bds_detail(bds_id):
             "outside/os-bds-detail.html",
             bds_images=bds_images,
             bds=bds,
-            bds_type=bds_type,
+            bds_types=bds_types,
             bds_city=bds_city,
             bds_province=bds_province,
             address=bds.address,
@@ -141,7 +155,7 @@ def bds_add_edit():
 
     if request.method == "POST":
         # Lấy dữ liệu từ form
-        type_id = request.form.get("type-id")
+        type_ids = request.form.getlist("type-id[]")
         province_id = request.form.get("province-id")
         city_id = request.form.get("city-id")
         direction_id = request.form.get("direction-id")
@@ -154,7 +168,6 @@ def bds_add_edit():
 
         if bds:
             # Cập nhật thông tin BDS
-            bds.type_id = type_id
             bds.province_id = province_id
             bds.city_id = city_id
             bds.direction_id = direction_id
@@ -167,10 +180,26 @@ def bds_add_edit():
             bds.update_user_id = current_user.id
             db.session.add(bds)
             db.session.flush()  # Lưu BDS để có ID
+
+            # Cập nhật các mối liên kết giữa BĐS và loại BĐS
+            for bds_type_relation in bds.bds_type_relations:
+                bds_type_relation.del_flg = True
+                db.session.add(bds_type_relation)
+            db.session.commit()
+
+            # Tạo mới các mối liên kết giữa BĐS và loại BĐS
+            for type_id in type_ids:
+                bds_type_relation = BdsTypeRelation(
+                    bds_id=bds.id,
+                    type_id=type_id,
+                    create_user_id=current_user.id,
+                    update_user_id=current_user.id
+                )
+                db.session.add(bds_type_relation)
+            db.session.commit()
         else:
             # Tạo BDS mới
             new_bds = Bds(
-                type_id=type_id,
                 province_id=province_id,
                 city_id=city_id,
                 direction_id=direction_id,
@@ -185,7 +214,16 @@ def bds_add_edit():
             )
             db.session.add(new_bds)
             db.session.flush()  # Lưu BDS để có ID
-            bds = new_bds
+
+            # Thêm các loại BĐS mới
+            for type_id in type_ids:
+                bds_type_relation = BdsTypeRelation(
+                    bds_id=new_bds.id,
+                    type_id=type_id,
+                    create_user_id=current_user.id,
+                    update_user_id=current_user.id,
+                )
+                db.session.add(bds_type_relation)
 
         # Xử lý ảnh
         images = request.files.getlist("input2[]")
@@ -240,9 +278,9 @@ def bds_add_edit():
                     db.session.add(bdsImage)
 
         db.session.commit()
-
         return redirect(url_for("bds.bds_list"))
 
+    # Trả về template bds-add-edit.html với các dữ liệu cần thiết
     return render_template(
         "bds-add-edit.html",
         bds=bds,
@@ -259,9 +297,21 @@ def bds_add_edit():
 def bds_delete(bds_id):
     bds = get_bds_by_id(bds_id)
     if bds:
+        # Xóa các BdsTypeRelation liên quan đến BĐS này
+        BdsTypeRelation.query.filter_by(bds_id=bds.id, del_flg=False).update({BdsTypeRelation.del_flg: True})
+        
+        # Xóa các ảnh liên quan trong BdsImage
+        BdsImage.query.filter_by(bds_id=bds.id, del_flg=False).update({BdsImage.del_flg: True})
+        
+        # Xóa các liên kết trong BdsUserRelation
+        BdsUserRelation.query.filter_by(bds_id=bds.id, del_flg=False).update({BdsUserRelation.del_flg: True})
+        
+        db.session.commit()
+
+        # Đánh dấu BĐS là đã xóa
         bds.del_flg = True
         db.session.commit()
-    return redirect("/bds_list")
+    return redirect(url_for("bds.bds_list"))
 
 
 @bds_bp.route("/bds_search", methods=["GET", "POST"])
@@ -290,7 +340,7 @@ def bds_search():
 @login_required
 def os_bds_search():
     if request.method == "POST":
-        bds_type_id = request.form.get("type-select")
+        bds_type_ids = request.form.getlist("type-id[]")
         bds_province_id = request.form.get("province-select")
         bds_city_id = request.form.get("city-select")
         price_range_id = request.form.get("price-range-select")
@@ -298,9 +348,16 @@ def os_bds_search():
         direction_id = request.form.get("direction-select")
 
         query = Bds.query.filter_by(published_flg=True, del_flg=False)
-
-        if bds_type_id:
-            query = query.filter(Bds.type_id == bds_type_id)
+        if bds_type_ids:
+            bds_ids = (
+                db.session.query(BdsTypeRelation.bds_id)
+                .filter(BdsTypeRelation.type_id.in_(bds_type_ids))
+                .filter(BdsTypeRelation.del_flg == False)
+                .group_by(BdsTypeRelation.bds_id)
+                .having(func.count(BdsTypeRelation.bds_id) == len(bds_type_ids))
+                .all()
+            )
+            query = query.filter(Bds.id.in_([bds_id[0] for bds_id in bds_ids]))
         if bds_province_id:
             query = query.filter(Bds.province_id == bds_province_id)
         if bds_city_id:
@@ -332,7 +389,7 @@ def os_bds_search():
             "outside/os-bds-list.html",
             bds_data=bds_data,
             types=types,
-            selected_type_id=bds_type_id,
+            selected_type_ids=bds_type_ids,
             provinces=provinces,
             selected_province_id=bds_province_id,
             cities=cities,
@@ -381,7 +438,11 @@ def get_bds_data(query):
             BdsImage.query.filter_by(bds_id=bds.id, del_flg=False).count() - 1
         )
 
-        bds_type = Type.query.get(bds.type_id)
+        # Lấy thông tin về các loại BĐS
+        bds_types = Type.query.join(BdsTypeRelation).\
+            filter(BdsTypeRelation.bds_id == bds.id, BdsTypeRelation.del_flg == False, Type.del_flg == False).\
+            all()
+
         bds_city = City.query.get(bds.city_id)
         bds_province = Province.query.get(bds.province_id)
 
@@ -397,7 +458,7 @@ def get_bds_data(query):
                 "bds": bds,
                 "first_image_url": first_image_url,
                 "remaining_images_count": remaining_images_count,
-                "bds_type": bds_type,
+                "bds_types": bds_types,
                 "bds_city": bds_city,
                 "bds_province": bds_province,
                 "address": bds.address,

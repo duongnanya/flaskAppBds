@@ -73,6 +73,31 @@
         }
       });
     };
+    
+    //--- hiển thị tên Type được chọn trên Dropdown
+    var $dropdown = $('.dropdown');
+    var $button = $dropdown.find('#type-dropdown');
+    var $checkboxes = $dropdown.find('input[type="checkbox"]');
+
+    function updateButtonText() {
+        var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
+        var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
+
+        if (checkedCount === 0) {
+            $button.text('Chọn loại');
+        } else if (checkedCount === 1) {
+            $button.text(firstCheckedLabel);
+        } else {
+            $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
+        }
+    }
+
+    $checkboxes.on('change', function() {
+        updateButtonText();
+    });
+
+    // Cập nhật nội dung của button ngay khi trang được load
+    updateButtonText();
   </script>
 {% endblock %}
 
@@ -88,13 +113,24 @@
   <form action="{{ url_for('bds.os_bds_search') }}" method="POST" class="mb-3">
     <div class="row mb-3">
         <div class="col-4">
-            <label for="type-select" class="form-label">Loại:</label>
-            <select class="form-control" name="type-select" id="type-select">
-                <option value="">- Chọn loại -</option>
-                {% for type in types %}
-                <option value="{{ type.id }}" {% if selected_type_id == type.id|string %}selected{% endif %}>{{ type.name }}</option>
-                {% endfor %}
-            </select>
+          <label for="" class="form-label">Loại BĐS:</label>
+          <div class="dropdown">
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                Chọn loại
+              </button>
+              <div class="dropdown-menu p-4 col-12">
+                  <p>(Có thể chọn nhiều)</p>
+                  <ul class="list-group">
+                    {% for type in types %}
+                    <li class="list-group-item">
+                        <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}"
+                        {% if type.id|string in selected_type_ids %}checked{% endif %}>
+                        <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
+                    </li>
+                    {% endfor %}
+                </ul>
+              </div>
+          </div>
         </div>
         <div class="col-4">
             <label for="province-select" class="form-label">Tỉnh/Thành phố:</label>
@@ -174,7 +210,10 @@
             <h5 class="card-title">{{ bds_item.bds.title }}</h5>
           </a>
           <p class="card-text">
-            {{ bds_item.bds_type.name }}<br>
+            ({{ bds_item.bds_types|count }})
+            {% for bds_type in bds_item.bds_types %}
+                {{ bds_type.name }}{% if not loop.last %} / {% endif %}
+            {% endfor %}<br>
             {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
             {{ bds_item.bds_city.name }}, {{ bds_item.bds_province.name }}
           </p>

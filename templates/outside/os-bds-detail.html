@@ -99,7 +99,12 @@
       </div>
       <div class="col-12 col-md-12">
           <h3 class="mb-3">{{ bds.title }}</h3>
-          <p class="mb-2"><strong>Loại BĐS:</strong> {{ bds_type.name }}</p>
+          <p class="mb-2"><strong>Loại BĐS:</strong>
+              ({{ bds_types|count }})
+              {% for bds_type in bds_types %}
+                  {{ bds_type.name }}{% if not loop.last %} / {% endif %}
+              {% endfor %}
+          </p>
           <p class="mb-2"><strong>Địa chỉ:</strong> {{ address }}</p>
           <p class="mb-2"><strong>Giá:</strong> {{ price_from }} - {{ price_to }}</p>
           <p class="mb-2"><strong>Diện tích:</strong> {{ bds.area }} m²</p>
