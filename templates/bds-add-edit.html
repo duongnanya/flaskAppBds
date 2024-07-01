@@ -2,67 +2,67 @@
 
 {% block dnnScript %}
 <script>
-    //--- hiệu ứng mờ khi chọn ảnh (để xóa khi Edit)
-    $('input[type="checkbox"][name="delete_images[]"]').change(function() {
-        var $imageContainer = $(this).closest('.col-md-3');
-        if ($(this).is(':checked')) {
-            $imageContainer.find('img').addClass('opacity-50');
-        } else {
-            $imageContainer.find('img').removeClass('opacity-50');
-        }
-    });
-
-    //--- Tìm Cities tương ứng Provinces
-    $('#province-select').on('change', function() {
-        var provinceId = $(this).val();
-        if (provinceId) {
-            $.ajax({
-                url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
-                type: 'GET',
-                success: function(data) {
-                    $('#city-select').prop('disabled', false);
-                    $('#city-select').empty();
-                    $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
-                    $.each(data, function(index, city) {
-                        $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
-                    });
-                    // Chọn option đầu tiên nếu có dữ liệu
-                    if (data.length > 0) {
-                        $('#city-select').val(data[0].id);
-                    }
-                }
-            });
-        } else {
-            $('#city-select').prop('disabled', true);
-            $('#city-select').empty();
-            $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
-        }
-    });
-
-    //--- hiển thị tên Type được chọn trên Dropdown
-    var $dropdown = $('.dropdown');
-    var $button = $dropdown.find('#type-dropdown');
-    var $checkboxes = $dropdown.find('input[type="checkbox"]');
-
-    function updateButtonText() {
-        var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
-        var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
-
-        if (checkedCount === 0) {
-            $button.text('Chọn loại');
-        } else if (checkedCount === 1) {
-            $button.text(firstCheckedLabel);
-        } else {
-            $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
-        }
+//--- hiệu ứng mờ khi chọn ảnh (để xóa khi Edit)
+$('input[type="checkbox"][name="delete_images[]"]').change(function() {
+    var $imageContainer = $(this).closest('.col-md-3');
+    if ($(this).is(':checked')) {
+        $imageContainer.find('img').addClass('opacity-50');
+    } else {
+        $imageContainer.find('img').removeClass('opacity-50');
     }
+});
 
-    $checkboxes.on('change', function() {
-        updateButtonText();
-    });
+//--- Tìm Cities tương ứng Provinces
+$('#province-select').on('change', function() {
+    var provinceId = $(this).val();
+    if (provinceId) {
+        $.ajax({
+            url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+            type: 'GET',
+            success: function(data) {
+                $('#city-select').prop('disabled', false);
+                $('#city-select').empty();
+                $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+                $.each(data, function(index, city) {
+                    $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
+                });
+                // Chọn option đầu tiên nếu có dữ liệu
+                if (data.length > 0) {
+                    $('#city-select').val(data[0].id);
+                }
+            }
+        });
+    } else {
+        $('#city-select').prop('disabled', true);
+        $('#city-select').empty();
+        $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+    }
+});
 
-    // Cập nhật nội dung của button ngay khi trang được load
+//--- hiển thị tên Type được chọn trên Dropdown
+var $dropdown = $('.dropdown');
+var $button = $dropdown.find('#type-dropdown');
+var $checkboxes = $dropdown.find('input[type="checkbox"]');
+
+function updateButtonText() {
+    var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
+    var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
+
+    if (checkedCount === 0) {
+        $button.text('Chọn loại');
+    } else if (checkedCount === 1) {
+        $button.text(firstCheckedLabel);
+    } else {
+        $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
+    }
+}
+
+$checkboxes.on('change', function() {
     updateButtonText();
+});
+
+// Cập nhật nội dung của button ngay khi trang được load
+updateButtonText();
 
 </script>
 {% endblock %}

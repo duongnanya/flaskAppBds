@@ -2,16 +2,14 @@
 
 {% block dnnScript %}
 <script>
-    $(document).ready(function() {
-        $(".delete-btn").click(function(e) {
-            e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
-            
-            if (confirm("Bạn có chắc chắn muốn xóa?")) {
-            // Nếu người dùng xác nhận, chuyển hướng đến URL
-            window.location.href = $(this).attr("href");
-            }
-        });
-    });
+$(".delete-btn").click(function(e) {
+    e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
+    
+    if (confirm("Bạn có chắc chắn muốn xóa?")) {
+        // Nếu người dùng xác nhận, chuyển hướng đến URL
+        window.location.href = $(this).attr("href");
+    }
+});
 </script>
 {% endblock %}
 

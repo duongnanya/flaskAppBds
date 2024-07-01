@@ -2,57 +2,58 @@
 
 {% block dnnScript %}
 <script>
-  //--- Click Heart để lưu/quan tâm
-  // Kiểm tra trạng thái ban đầu của icon heart/heart-fill
-  $(".bds-favorite").each(function() {
-    var bdsId = $(this).data("bds-id");
-    checkFavoriteStatus(bdsId, $(this));
-  });
 
-  // Xử lý sự kiện click vào icon heart/heart-fill
-  $(".bds-favorite").click(function() {
-    var bdsId = $(this).data("bds-id");
-    var $icon = $(this);
-    toggleFavoriteStatus(bdsId, $icon);
-  });
+//--- Click Heart để lưu/quan tâm
+// Kiểm tra trạng thái ban đầu của icon heart/heart-fill
+$(".bds-favorite").each(function() {
+  var bdsId = $(this).data("bds-id");
+  checkFavoriteStatus(bdsId, $(this));
+});
 
-  function toggleFavoriteStatus(bdsId, $icon) {
-    $.ajax({
-      url: "{{ url_for('bds.toggle_favorite', bds_id='-1') }}".replace("-1", bdsId),
-      type: "POST",
-      success: function(data) {
-        if (data.success) {
-          if (data.is_favorite) {
-            $icon.removeClass("bi-heart").addClass("bi-heart-fill");
-          } else {
-            $icon.removeClass("bi-heart-fill").addClass("bi-heart");
-          }
-        } else {
-          alert("Có lỗi xảy ra. Vui lòng thử lại.");
-        }
-      },
-      error: function() {
-        alert("Có lỗi xảy ra. Vui lòng thử lại.");
-      }
-    });
-  };
+// Xử lý sự kiện click vào icon heart/heart-fill
+$(".bds-favorite").click(function() {
+  var bdsId = $(this).data("bds-id");
+  var $icon = $(this);
+  toggleFavoriteStatus(bdsId, $icon);
+});
 
-  function checkFavoriteStatus(bdsId, $icon) {
-    $.ajax({
-      url: "{{ url_for('bds.check_favorite', bds_id='-1') }}".replace("-1", bdsId),
-      type: "GET",
-      success: function(data) {
+function toggleFavoriteStatus(bdsId, $icon) {
+  $.ajax({
+    url: "{{ url_for('bds.toggle_favorite', bds_id='-1') }}".replace("-1", bdsId),
+    type: "POST",
+    success: function(data) {
+      if (data.success) {
         if (data.is_favorite) {
           $icon.removeClass("bi-heart").addClass("bi-heart-fill");
         } else {
           $icon.removeClass("bi-heart-fill").addClass("bi-heart");
         }
-      },
-      error: function() {
+      } else {
         alert("Có lỗi xảy ra. Vui lòng thử lại.");
       }
-    });
-  };
+    },
+    error: function() {
+      alert("Có lỗi xảy ra. Vui lòng thử lại.");
+    }
+  });
+};
+
+function checkFavoriteStatus(bdsId, $icon) {
+  $.ajax({
+    url: "{{ url_for('bds.check_favorite', bds_id='-1') }}".replace("-1", bdsId),
+    type: "GET",
+    success: function(data) {
+      if (data.is_favorite) {
+        $icon.removeClass("bi-heart").addClass("bi-heart-fill");
+      } else {
+        $icon.removeClass("bi-heart-fill").addClass("bi-heart");
+      }
+    },
+    error: function() {
+      alert("Có lỗi xảy ra. Vui lòng thử lại.");
+    }
+  });
+};
 </script>
 {% endblock %}
 

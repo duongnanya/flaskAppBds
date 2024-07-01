@@ -2,35 +2,33 @@
 
 {% block dnnScript %}
 <script>
-    $(document).ready(function() {
-        $('.carousel-item').each(function(index) {
-            $(this).attr('data-bs-slide-to', index);
-        });
-    
-        $('.col-md-2 img').click(function() {
-            var index = $(this).closest('.col-md-2').index();
-            $('#carouselExample').carousel(index);
-        });
-    
-        $('#carouselExample').on('slide.bs.carousel', function(event) {
-            var index = $(event.relatedTarget).index();
-            $('.col-md-2 img').removeClass('active-thumbnail');
-            $('.col-md-2 img').eq(index).addClass('active-thumbnail');
-        });
-    
-        // Gán class active-thumbnail cho ảnh hiện tại
-        var currentIndex = $('#carouselExample .carousel-item.active').index();
-        $('.col-md-2 img').eq(currentIndex).addClass('active-thumbnail');
+$('.carousel-item').each(function(index) {
+    $(this).attr('data-bs-slide-to', index);
+});
 
-        $(".delete-btn").click(function(e) {
-            e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
-            
-            if (confirm("Bạn có chắc chắn muốn xóa?")) {
-            // Nếu người dùng xác nhận, chuyển hướng đến URL
-            window.location.href = $(this).attr("href");
-            }
-        });
-    });
+$('.col-md-2 img').click(function() {
+    var index = $(this).closest('.col-md-2').index();
+    $('#carouselExample').carousel(index);
+});
+
+$('#carouselExample').on('slide.bs.carousel', function(event) {
+    var index = $(event.relatedTarget).index();
+    $('.col-md-2 img').removeClass('active-thumbnail');
+    $('.col-md-2 img').eq(index).addClass('active-thumbnail');
+});
+
+// Gán class active-thumbnail cho ảnh hiện tại
+var currentIndex = $('#carouselExample .carousel-item.active').index();
+$('.col-md-2 img').eq(currentIndex).addClass('active-thumbnail');
+
+$(".delete-btn").click(function(e) {
+    e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
+    
+    if (confirm("Bạn có chắc chắn muốn xóa?")) {
+    // Nếu người dùng xác nhận, chuyển hướng đến URL
+    window.location.href = $(this).attr("href");
+    }
+});
 </script>
 {% endblock %}
 
