@@ -15,21 +15,28 @@
     //--- Tìm Cities tương ứng Provinces
     $('#province-select').on('change', function() {
         var provinceId = $(this).val();
-        $.ajax({
-            url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
-            type: 'GET',
-            success: function(data) {
-                $('#city-select').empty();
-                $('#city-select').append('<option value="">- Chọn thành phố / huyện -</option>');
-                $.each(data, function(index, city) {
-                    $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
-                });
-                // Chọn option đầu tiên nếu có dữ liệu
-                if (data.length > 0) {
-                    $('#city-select').val(data[0].id);
+        if (provinceId) {
+            $.ajax({
+                url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+                type: 'GET',
+                success: function(data) {
+                    $('#city-select').prop('disabled', false);
+                    $('#city-select').empty();
+                    $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+                    $.each(data, function(index, city) {
+                        $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
+                    });
+                    // Chọn option đầu tiên nếu có dữ liệu
+                    if (data.length > 0) {
+                        $('#city-select').val(data[0].id);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            $('#city-select').prop('disabled', true);
+            $('#city-select').empty();
+            $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+        }
     });
 
     //--- hiển thị tên Type được chọn trên Dropdown
@@ -145,7 +152,7 @@
             </div>
             <div class="col-4">
                 <label for="address" class="form-label">Quận/Huyện:</label>
-                <select class="form-control" name="city-id" id="city-select" required>
+                <select class="form-control" name="city-id" id="city-select" disabled>
                     <option value="">- Chọn Quận/Huyện -</option>
                     {% if bds %}
                     {% for city in cities %}
@@ -192,7 +199,7 @@
             </div>
         </div>
         <div class="row mb-3">
-            <div class="col-4">
+            <!-- <div class="col-4">
                 <label class="form-label">Hướng:</label>
                 <select class="form-control" name="direction-id" required>
                     <option value="">- Chọn hướng -</option>
@@ -200,7 +207,7 @@
                     <option value="{{ direction.id }}" {% if bds and bds.direction_id == direction.id %}selected{% endif %}>{{ direction.name }}</option>
                     {% endfor %}
                 </select>
-            </div>
+            </div> -->
             <div class="col-4">
                 <label class="form-label">Đã bán:</label><br>
                 <div class="form-check form-check-inline">

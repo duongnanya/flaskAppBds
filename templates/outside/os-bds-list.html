@@ -5,21 +5,28 @@
     //--- Tìm Cities tương ứng Provinces
     $('#province-select').on('change', function() {
         var provinceId = $(this).val();
-        $.ajax({
-            url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
-            type: 'GET',
-            success: function(data) {
-                $('#city-select').empty();
-                $('#city-select').append('<option value="">- Chọn thành phố / huyện -</option>');
-                $.each(data, function(index, city) {
-                    $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
-                });
-                // Chọn option đầu tiên nếu có dữ liệu
-                if (data.length > 0) {
-                    $('#city-select').val(data[0].id);
+        if (provinceId) {
+            $.ajax({
+                url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+                type: 'GET',
+                success: function(data) {
+                    $('#city-select').prop('disabled', false);
+                    $('#city-select').empty();
+                    $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+                    $.each(data, function(index, city) {
+                        $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
+                    });
+                    // Chọn option đầu tiên nếu có dữ liệu
+                    if (data.length > 0) {
+                        $('#city-select').val(data[0].id);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            $('#city-select').prop('disabled', true);
+            $('#city-select').empty();
+            $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+        }
     });
     
     //--- Click Heart để lưu/quan tâm
@@ -112,7 +119,7 @@
   </div>
   <form action="{{ url_for('bds.os_bds_search') }}" method="POST" class="mb-3">
     <div class="row mb-3">
-        <div class="col-4">
+        <div class="col-3">
           <label for="" class="form-label">Loại BĐS:</label>
           <div class="dropdown">
               <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
@@ -132,7 +139,7 @@
               </div>
           </div>
         </div>
-        <div class="col-4">
+        <div class="col-3">
             <label for="province-select" class="form-label">Tỉnh/Thành phố:</label>
             <select class="form-control" name="province-select" id="province-select">
                 <option value="">- Chọn Tỉnh/Thành phố -</option>
@@ -141,18 +148,24 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-4">
+        <div class="col-3">
             <label for="city-select" class="form-label">Quận/Huyện:</label>
-            <select class="form-control" name="city-select" id="city-select">
+            <select class="form-control" name="city-select" id="city-select" disabled>
                 <option value="">- Chọn Quận/Huyện -</option>
                 {% for city in cities %}
                 <option value="{{ city.id }}" {% if selected_city_id == city.id|string %}selected{% endif %}>{{ city.name }}</option>
                 {% endfor %}
             </select>
         </div>
+        <div class="col-3">
+            <label for="address-text" class="form-label">Đường/phố:</label>
+            <div class="input-group">
+              <input type="text" class="form-control" name="address-text" placeholder="Tên Đường/phố" aria-label="Search" value="{{ address }}">
+            </div>
+        </div>
     </div>
     <div class="row mb-3">
-        <div class="col-4">
+        <div class="col-3">
             <label for="pricerange-select" class="form-label">Mức giá:</label>
             <select class="form-control" name="price-range-select" id="price-range-select">
                 <option value="">- Chọn mức giá -</option>
@@ -161,7 +174,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-4">
+        <div class="col-3">
             <label for="arearange-select" class="form-label">Diện tích:</label>
             <select class="form-control" name="area-range-select" id="area-range-select">
                 <option value="">- Chọn diện tích -</option>
@@ -170,7 +183,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-4">
+        <!-- <div class="col-3">
             <label for="direction-select" class="form-label">Hướng:</label>
             <select class="form-control" name="direction-select" id="direction-select">
                 <option value="">- Chọn hướng -</option>
@@ -178,9 +191,11 @@
                 <option value="{{ direction.id }}" {% if selected_direction_id == direction.id|string %}selected{% endif %}>{{ direction.name }}</option>
                 {% endfor %}
             </select>
+        </div> -->
+        <div class="col-3">
+          <button class="btn btn-primary" type="submit">Tìm kiếm</button>
         </div>
     </div>
-    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
   </form>
 
   <div class="row">

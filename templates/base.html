@@ -23,10 +23,12 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                {% if current_user.role_id == Config.ROLE_ADMIN or current_user.role_id == Config.ROLE_USER %}
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('bds.bds_list') }}">★Bds</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('contact.contact') }}">★Contact</a>
                     </li>
                     {% if current_user.role_id == Config.ROLE_ADMIN %}
                     <li class="nav-item">
@@ -50,13 +52,6 @@
                     </div>
                     {% endif %}
                 </ul>
-                {% elif current_user.role_id == Config.ROLE_EDITOR %}
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('bds.bds_list') }}">★Bds</a>
-                    </li>
-                </ul>
-                {% endif %}
                 <div class="btn-group">
                     {% if current_user.is_authenticated %}
                     <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

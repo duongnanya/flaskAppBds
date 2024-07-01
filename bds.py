@@ -20,7 +20,7 @@ from models import (
     BdsTypeRelation,
     BdsUserRelation,
     City,
-    Direction,
+    # Direction,
     Image,
     Province,
     Type,
@@ -53,9 +53,14 @@ def bds_list():
         cities = City.query.all()
         priceRanges = PriceRange.query.all()
         areaRanges = AreaRange.query.all()
-        directions = Direction.query.all()
+        # directions = Direction.query.all()
+        address = request.args.get('address', '')
 
-        bdses = Bds.query.filter_by(published_flg=True, del_flg=False).all()
+        # Lấy danh sách BĐS
+        bdses = Bds.query.filter_by(published_flg=True, del_flg=False)
+        if address:
+            bdses = bdses.filter(Bds.address.like(f"%{address}%"))
+        bdses = bdses.all()
         bds_data = get_bds_data(bdses)
 
         # Lấy thông tin Type cho mỗi BĐS
@@ -74,8 +79,9 @@ def bds_list():
             cities=cities,
             priceRanges=priceRanges,
             areaRanges=areaRanges,
-            directions=directions,
+            # directions=directions,
             bds_types=bds_types,
+            address=address,
         )
 
 
@@ -146,7 +152,7 @@ def bds_add_edit():
     types = Type.query.all()
     provinces = Province.query.all()
     cities = City.query.filter_by(province_id=bds.province_id).all() if bds else []
-    directions = Direction.query.all()
+    # directions = Direction.query.all()
 
     # Tìm các ảnh thuộc về BDS hiện tại
     bds_images = (
@@ -158,7 +164,7 @@ def bds_add_edit():
         type_ids = request.form.getlist("type-id[]")
         province_id = request.form.get("province-id")
         city_id = request.form.get("city-id")
-        direction_id = request.form.get("direction-id")
+        # direction_id = request.form.get("direction-id")
         address = request.form.get("address")
         price_from = float(request.form.get("price-from"))
         price_to = float(request.form.get("price-to"))
@@ -170,7 +176,7 @@ def bds_add_edit():
             # Cập nhật thông tin BDS
             bds.province_id = province_id
             bds.city_id = city_id
-            bds.direction_id = direction_id
+            # bds.direction_id = direction_id
             bds.address = address
             bds.price_from = price_from
             bds.price_to = price_to
@@ -202,7 +208,7 @@ def bds_add_edit():
             new_bds = Bds(
                 province_id=province_id,
                 city_id=city_id,
-                direction_id=direction_id,
+                # direction_id=direction_id,
                 address=address,
                 price_from=price_from,
                 price_to=price_to,
@@ -288,7 +294,7 @@ def bds_add_edit():
         types=types,
         provinces=provinces,
         cities=cities,
-        directions=directions,
+        # directions=directions,
     )
 
 
@@ -345,7 +351,8 @@ def os_bds_search():
         bds_city_id = request.form.get("city-select")
         price_range_id = request.form.get("price-range-select")
         area_range_id = request.form.get("area-range-select")
-        direction_id = request.form.get("direction-select")
+        address_text = request.form.get("address-text")
+        # direction_id = request.form.get("direction-select")
 
         query = Bds.query.filter_by(published_flg=True, del_flg=False)
         if bds_type_ids:
@@ -370,8 +377,10 @@ def os_bds_search():
         if area_range_id:
             ar = AreaRange.query.get(area_range_id)
             query = query.filter(Bds.area >= ar.area_from, Bds.area <= ar.area_to)
-        if direction_id:
-            query = query.filter(Bds.direction_id == direction_id)
+        if address_text:
+            query = query.filter(Bds.address.like(f"%{address_text}%"))
+        # if direction_id:
+        #     query = query.filter(Bds.direction_id == direction_id)
 
         bds_data = get_bds_data(query)
 
@@ -383,7 +392,7 @@ def os_bds_search():
             cities = []
         priceRanges = PriceRange.query.all()
         areaRanges = AreaRange.query.all()
-        directions = Direction.query.all()
+        # directions = Direction.query.all()
 
         return render_template(
             "outside/os-bds-list.html",
@@ -398,11 +407,12 @@ def os_bds_search():
             selected_price_range_id=price_range_id,
             areaRanges=areaRanges,
             selected_area_range_id=area_range_id,
-            directions=directions,
-            selected_direction_id=direction_id,
+            address=address_text,
+            # directions=directions,
+            # selected_direction_id=direction_id,
         )
 
-    bds_list()
+    return bds_list()
 
 
 def get_bds_by_id(bds_id):
