@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block dnnScript %}
+<script src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
 <script>
 
 //--- Tạo Text từ các giá trị đã chọn, lưu vào Mục Tin nhắn
@@ -124,7 +125,7 @@ function updateMessageField() {
     if (selectedAreaRange) {
         messageText += 'Diện tích: ' + selectedAreaRange + '\n';
     } else if ($('#area-text').val()) {
-        messageText += 'Diện tích: ' + $('#area-text').val() + ' m2\n';
+        messageText += 'Diện tích: ' + $('#area-text').val() + ' m²\n';
     }
 
     if (additionalRequirements) {
@@ -179,9 +180,9 @@ updateButtonText();
   {% endwith %}
   <div class="row">
     <div class="col-9">
-      <h1>Thông tin liên hệ</h1>
+      <h1>Mecland.vn</h1>
       <p>Địa chỉ: 123 ABC, XYZ</p>
-      <p>Email: example@example.com</p>
+      <p>Email: mecland.vn@gmail.com</p>
       <p>Điện thoại: 0123456789</p>
     </div>
     <div class="col-3">
@@ -192,25 +193,55 @@ updateButtonText();
 
   <h2>Gửi tin nhắn</h2>
   
-  <form action="#" method="POST">
-    <div class="form-group mb-3">
-      <label for="name">Họ và tên:</label>
-      <input type="text" id="name" name="name" class="form-control" required>
+  <form action="#" method="POST" class="row g-3 needs-validation" novalidate>
+    <div class="col-md-6">
+        <label for="name" class="form-label">Họ và tên:</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+        <div class="valid-feedback">
+            Looks good!
+        </div>
+        <div class="invalid-feedback">
+            Vui lòng nhập họ và tên.
+        </div>
     </div>
-    <div class="form-group mb-3">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" class="form-control" required>
+    <div class="col-md-6">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+        <div class="valid-feedback">
+            Looks good!
+        </div>
+        <div class="invalid-feedback">
+            Vui lòng nhập địa chỉ email hợp lệ.
+        </div>
     </div>
-    <div class="form-group mb-3">
-        <label for="message">
-          Tin nhắn:
-          <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#exampleModal">
-            Đề nghị tìm kiếm
-          </button>
+    <div class="col-md-6">
+        <label for="phone" class="form-label">SĐT:</label>
+        <input type="tel" class="form-control" id="phone" name="phone" required>
+        <div class="valid-feedback">
+            Looks good!
+        </div>
+        <div class="invalid-feedback">
+            Vui lòng nhập số điện thoại hợp lệ.
+        </div>
+    </div>
+    <div class="col-md-12">
+        <label for="message" class="form-label">
+            Tin nhắn:
+            <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Đề nghị tìm kiếm
+            </button>
         </label>
-        <textarea id="message" name="message" rows="10" class="form-control" placeholder="" required></textarea>
+        <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+        <div class="valid-feedback">
+            Looks good!
+        </div>
+        <div class="invalid-feedback">
+            Vui lòng nhập tin nhắn.
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Gửi</button>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Gửi</button>
+    </div>
   </form>
 </div>
 
@@ -306,7 +337,7 @@ updateButtonText();
             <label for="area-text" class="form-label">Nhập diện tích:</label>
             <div class="input-group">
               <input type="text" class="form-control" id="area-text" placeholder="area" aria-label="area" aria-describedby="basic-addon2">
-              <span class="input-group-text" id="basic-addon2">m2</span>
+              <span class="input-group-text" id="basic-addon2">m²</span>
             </div>
           </div>
         </div>

@@ -331,14 +331,16 @@ class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)  # Thêm trường phone
     message = db.Column(db.Text, nullable=False)
     create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
     create_user_id = db.Column(db.Integer, nullable=True)   # có thể trống, vì người gửi thông tin, có thể là Guest, có thể là User
     del_flg = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __init__(self, name, email, message, create_user_id=None):
+    def __init__(self, name, email, phone, message, create_user_id=None):
         self.name = name
         self.email = email
+        self.phone = phone  # Gán giá trị cho trường phone
         self.message = message
         self.create_user_id = create_user_id
 

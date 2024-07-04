@@ -11,8 +11,11 @@ class Config:
     )
     SECRET_KEY = "duongnn_secret_key"  # Khai báo SECRET_KEY
 
-    MY_EMAIL = "duongnanya@gmail.com"
-    MY_EMAIL_APP_PASSWORD = "jfcn yjxo okfx glci"
+    # MY_EMAIL = "duongnanya@gmail.com"
+    # MY_EMAIL_APP_PASSWORD = "jfcn yjxo okfx glci"
+    
+    MY_EMAIL = "mecland.vn@gmail.com"
+    MY_EMAIL_APP_PASSWORD = "qftz tfsy iiyw dovq"
 
     UPLOAD_FOLDER = "static\\uploads\\"
 

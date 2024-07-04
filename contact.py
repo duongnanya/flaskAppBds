@@ -14,17 +14,18 @@ def contact():
     if request.method == "POST":
         name = request.form["name"]
         email = request.form["email"]
+        phone = request.form["phone"]
         message = request.form["message"]
 
         # Lưu message vào database
-        new_message = Contact(name=name, email=email, message=message)
+        new_message = Contact(name=name, email=email, phone=phone, message=message)
         db.session.add(new_message)
         db.session.commit()
 
         # Gửi email đến gmail của bạn
         send_email(
             "Liên hệ Tìm kiếm BĐS",
-            f"Tên: {name}\nEmail: {email}\nMessage:\n{message}",
+            f"Tên: {name}\nEmail: {email}\nSĐT: {phone}\Tin nhắn:\n{message}",
         )
 
         flash("Tin nhắn của bạn đã được gửi thành công!")
