@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+<script>
+$(".clear-search").click(function() {
+  $("input[name='search_keyword']").val("");
+});
+</script>
+{% endblock %}
+
+{% block title %}Danh sách Bài Viết{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+      <div class="col-md-10">
+        <h1>Danh sách Bài Viết</h1>
+      </div>
+      <div class="col-md-2">
+        <div class="d-flex justify-content-end mt-2">
+            <a class="btn btn-primary" href="{{ url_for('post.post_add_edit') }}">Thêm Bài Viết</a>
+        </div>
+      </div>
+    </div>
+    <form action="{{ url_for('post.post_search') }}" method="POST" class="mb-3">
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" name="search_keyword" placeholder="Tiêu đề, Nội dung" aria-label="Search" value="{{ search_keyword }}">
+        <button class="btn btn-outline-secondary clear-search" type="button">✕</button>
+        <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+      </div>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tiêu đề</th>
+                <th>Nội dung</th>
+                <th>Danh Mục</th>
+                <th>Trạng thái</th>
+                <th>Ngày đăng</th>
+                <th>Tác giả</th>
+                <th>Ngày tạo</th>
+                <th>CRUD</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in post_data %}
+            <tr>
+                <td>{{ post.id }}</td>
+                <td>{{ post.title }}</td>
+                <td>{{ post.content }}</td>
+                <td>{{ post.category_name }}</td>
+                <td>{{ post.status_name }}</td>
+                <td>
+                    {% if post.status_id == Config.STATUS_PUBLISHED and post.published_dt %}
+                        {{ post.published_dt.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ post.create_user_name }}</td>
+                <td>{{ post.create_dt.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <a href="{{ url_for('post.post_detail', post_id=post.id) }}" class="btn btn-primary">Xem</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

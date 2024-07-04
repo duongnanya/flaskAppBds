@@ -18,6 +18,9 @@ from user import user_bp
 from bds import bds_bp
 from common import common_bp
 from contact import contact_bp
+from category import category_bp
+from post import post_bp
+from status import status_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -45,6 +48,9 @@ app.register_blueprint(user_bp)
 app.register_blueprint(bds_bp)
 app.register_blueprint(common_bp)
 app.register_blueprint(contact_bp)
+app.register_blueprint(category_bp)
+app.register_blueprint(post_bp)
+app.register_blueprint(status_bp)
 
 # Đường dẫn thư mục gốc của ứng dụng
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

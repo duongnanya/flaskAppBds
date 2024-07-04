@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+<script>
+$(".delete-btn").click(function(e) {
+  e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
+  
+  if (confirm("Bạn có chắc chắn muốn xóa?")) {
+    // Nếu người dùng xác nhận, chuyển hướng đến URL
+    window.location.href = $(this).attr("href");
+  }
+});
+</script>
+{% endblock %}
+
+{% block title %}Thông tin Trạng Thái{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-10">
+      <h1>Thông tin Trạng Thái</h1>
+    </div>
+    <div class="col-md-2">
+      <div class="d-flex justify-content-end mt-2">
+        <a href="{{ url_for('status.status_delete', status_id=status.id) }}" class="btn btn-danger delete-btn" style="margin-right: 5px;">Xóa</a>
+        <a href="{{ url_for('status.status_add_edit', status_id=status.id) }}" class="btn btn-primary">Sửa</a>
+      </div>
+    </div>
+  </div>
+  <table class="table">
+    <tr>
+      <th>ID</th>
+      <td>{{ status.id }}</td>
+    </tr>
+    <tr>
+      <th>Tên Trạng Thái</th>
+      <td>{{ status.name }}</td>
+    </tr>
+    <tr>
+      <th>Mô Tả</th>
+      <td>{{ status.description }}</td>
+    </tr>
+  </table>
+</div>
+{% endblock %}

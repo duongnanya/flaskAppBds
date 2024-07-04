@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Thêm/Chỉnh sửa Bài Viết{% endblock %}
+
+{% block content %}
+<div class="container">
+  <form method="POST" action="{{ url_for('post.post_add_edit', post_id=post.id if post else None) }}">
+    <div class="row">
+        <div class="col-md-10">
+          <h2>{% if post %}Chỉnh sửa Bài Viết{% else %}Thêm Bài Viết{% endif %}</h2>
+        </div>
+        <div class="col-md-2">
+            <div class="d-flex justify-content-end mt-2">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+      <label for="title">Tiêu đề:</label>
+      <input type="text" class="form-control" id="title" name="title" value="{{ post.title if post else '' }}" placeholder="Tiêu đề">
+    </div>
+    <div class="form-group">
+      <label for="content">Nội dung:</label>
+      <textarea class="form-control" id="content" name="content" rows="10" placeholder="Nội dung">{{ post.content if post else '' }}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="category">Danh Mục:</label>
+      <select class="form-select" name="category" id="category">
+        {% for category in categories %}
+          <option value="{{ category.id }}" {% if post and post.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="status">Trạng thái:</label>
+      <select class="form-select" name="status" id="status">
+        {% for status in statuses %}
+          <option value="{{ status.id }}" {% if post and post.status_id == status.id %}selected{% endif %}>{{ status.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if post %}
+    <div class="form-group">
+      <label for="create_user">Người tạo:</label>
+      <p>{{ post.create_user.name }}</p>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

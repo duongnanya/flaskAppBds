@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+
+{% endblock %}
+
+{% block title %}Danh sách Bài viết{% endblock %}
+
+{% block content %}
+<div class="container os-post-list-html">
+  {% if post_data %}
+  {% for post in post_data %}
+  <div class="post-item">
+    <h3><a href="{{ url_for('post.post_detail', post_id=post.id) }}">{{ post.title }}</a></h3>
+    <p>{{ post.content }}</p>
+    <p>Người tạo: {{ post.create_user_name }}</p>
+    <p>Danh mục: {{ post.category_name }}</p>
+  </div>
+  {% endfor %}
+  {% else %}
+    Không có bài viết nào.
+  {% endif %}
+</div>
+{% endblock %}

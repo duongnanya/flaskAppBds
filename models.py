@@ -97,6 +97,82 @@ class Role(db.Model):
         self.create_user_id = create_user_id
         self.update_user_id = update_user_id
 
+class Status(db.Model):
+    __tablename__ = "c_status"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255))
+    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    create_user_id = db.Column(db.Integer)
+    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, name, description, create_user_id=None, update_user_id=None):
+        self.name = name
+        self.description = description
+        self.create_user_id = create_user_id
+        self.update_user_id = update_user_id
+
+class PriceRange(db.Model):
+    __tablename__ = "c_price_range"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    price_from = db.Column(db.Numeric(precision=18, scale=2), nullable=False)
+    price_to = db.Column(db.Numeric(precision=18, scale=2), nullable=False)
+    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    create_user_id = db.Column(db.Integer)
+    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, name, price_from, price_to, create_user_id=None, update_user_id=None):
+        self.name = name
+        self.price_from = price_from
+        self.price_to = price_to
+        self.create_user_id = create_user_id
+        self.update_user_id = update_user_id
+
+class AreaRange(db.Model):
+    __tablename__ = "c_area_range"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    area_from = db.Column(db.Integer, nullable=False)
+    area_to = db.Column(db.Integer, nullable=False)
+    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    create_user_id = db.Column(db.Integer)
+    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, name, area_from, area_to, create_user_id=None, update_user_id=None):
+        self.name = name
+        self.area_from = area_from
+        self.area_to = area_to
+        self.create_user_id = create_user_id
+        self.update_user_id = update_user_id
+
+class Category(db.Model):
+    __tablename__ = "c_category"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    create_user_id = db.Column(db.Integer, nullable=False)
+    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer, nullable=False)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, name, description, create_user_id, update_user_id):
+        self.name = name
+        self.description = description
+        self.create_user_id = create_user_id
+        self.update_user_id = update_user_id
+
 class Bds(db.Model):
     __tablename__ = "m_bds"
 
@@ -228,46 +304,6 @@ class BdsUserRelation(db.Model):
         self.create_user_id = create_user_id
         self.update_user_id = update_user_id
 
-class PriceRange(db.Model):
-    __tablename__ = "c_price_range"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    price_from = db.Column(db.Numeric(precision=18, scale=2), nullable=False)
-    price_to = db.Column(db.Numeric(precision=18, scale=2), nullable=False)
-    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
-    create_user_id = db.Column(db.Integer)
-    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
-    update_user_id = db.Column(db.Integer)
-    del_flg = db.Column(db.Boolean, nullable=False, default=False)
-
-    def __init__(self, name, price_from, price_to, create_user_id=None, update_user_id=None):
-        self.name = name
-        self.price_from = price_from
-        self.price_to = price_to
-        self.create_user_id = create_user_id
-        self.update_user_id = update_user_id
-
-class AreaRange(db.Model):
-    __tablename__ = "c_area_range"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    area_from = db.Column(db.Integer, nullable=False)
-    area_to = db.Column(db.Integer, nullable=False)
-    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
-    create_user_id = db.Column(db.Integer)
-    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
-    update_user_id = db.Column(db.Integer)
-    del_flg = db.Column(db.Boolean, nullable=False, default=False)
-
-    def __init__(self, name, area_from, area_to, create_user_id=None, update_user_id=None):
-        self.name = name
-        self.area_from = area_from
-        self.area_to = area_to
-        self.create_user_id = create_user_id
-        self.update_user_id = update_user_id
-
 class BdsTypeRelation(db.Model):
     __tablename__ = "r_bds_type"
 
@@ -305,3 +341,31 @@ class Contact(db.Model):
         self.email = email
         self.message = message
         self.create_user_id = create_user_id
+
+class Post(db.Model):
+    __tablename__ = "m_post"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('c_category.id'), nullable=False)
+    status_id = db.Column(db.Integer, db.ForeignKey('c_status.id'), nullable=False)
+    published_dt = db.Column(db.TIMESTAMP, nullable=True)
+    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    create_user_id = db.Column(db.Integer, db.ForeignKey('m_user.id'), nullable=False)
+    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
+    update_user_id = db.Column(db.Integer, db.ForeignKey('m_user.id'), nullable=False)
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    category = db.relationship('Category', backref='posts')
+    status = db.relationship('Status', backref='posts')
+    create_user = db.relationship('User', foreign_keys=[create_user_id], backref='created_posts')
+    update_user = db.relationship('User', foreign_keys=[update_user_id], backref='updated_posts')
+
+    def __init__(self, title, content, category_id, status_id, create_user_id, update_user_id):
+        self.title = title
+        self.content = content
+        self.category_id = category_id
+        self.status_id = status_id
+        self.create_user_id = create_user_id
+        self.update_user_id = update_user_id

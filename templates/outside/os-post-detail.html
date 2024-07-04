@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+
+{% endblock %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>{{ post.title }}</h1>
+  <div class="post-info">
+    <p>Người tạo: {{ post.create_user.name }}</p>
+    <p>Danh mục: {{ post.category.name }}</p>
+    <p>Ngày tạo: {{ post.create_dt }}</p>
+  </div>
+  <div class="post-content">
+    {{ post.content }}
+  </div>
+</div>
+{% endblock %}

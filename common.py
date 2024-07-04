@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from models import db, Province, City
+from models import Category, Status, db, Province, City
 import pandas as pd
 import logging
 from datetime import datetime, timedelta
@@ -47,3 +47,13 @@ def handle_imported_file():
     db.session.commit()
 
     return render_template("import-province-city.html", success=True)
+
+
+def get_categories():
+    categories = Category.query.filter_by(del_flg=False).all()
+    return categories
+
+
+def get_statuses():
+    statuses = Status.query.filter_by(del_flg=False).all()
+    return statuses

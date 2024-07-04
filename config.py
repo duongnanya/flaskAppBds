@@ -16,7 +16,14 @@ class Config:
 
     UPLOAD_FOLDER = "static\\uploads\\"
 
-    # Role
+    # User's Role
     ROLE_ADMIN = 1
     ROLE_EDITOR = 2
     ROLE_USER = 3
+
+    # Post's Status
+    STATUS_DRAFT = 1
+    STATUS_PENDING = 2
+    STATUS_NEED_FIX = 3
+    STATUS_OK = 4
+    STATUS_PUBLISHED = 5

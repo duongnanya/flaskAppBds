@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block dnnScript %}
+<script>
+$(".clear-search").click(function() {
+  $("input[name='search_keyword']").val("");
+});
+</script>
+{% endblock %}
+
+{% block title %}Danh sách Trạng Thái{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-10">
+      <h1>Danh sách Trạng Thái</h1>
+    </div>
+    <div class="col-md-2">
+      <div class="d-flex justify-content-end mt-2">
+        <a class="btn btn-primary" href="{{ url_for('status.status_add_edit') }}">Thêm Trạng Thái</a>
+      </div>
+    </div>
+  </div>
+  <form action="{{ url_for('status.status_search') }}" method="POST" class="mb-3">
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" name="search_keyword" placeholder="Tên Trạng Thái" aria-label="Search" value="{{ search_keyword }}">
+      <button class="btn btn-outline-secondary clear-search" type="button">✕</button>
+      <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+    </div>
+  </form>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tên Trạng Thái</th>
+        <th>Mô Tả</th>
+        <th>CRUD</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for status in statuses %}
+      <tr>
+        <td>{{ status.id }}</td>
+        <td>{{ status.name }}</td>
+        <td>{{ status.description }}</td>
+        <td>
+          <a href="{{ url_for('status.status_detail', status_id=status.id) }}" class="btn btn-primary">Xem</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
