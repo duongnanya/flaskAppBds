@@ -65,3 +65,54 @@ def send_email(subject, message):
     text = msg.as_string()
     server.sendmail(Config.MY_EMAIL, Config.MY_EMAIL, text)
     server.quit()
+
+
+@contact_bp.route('/send_request', methods=['GET', 'POST'])
+def send_request():
+
+    # Lấy thông tin Code để tìm kiếm BĐS
+    types = Type.query.all()
+    provinces = Province.query.all()
+    cities = City.query.all()
+    priceRanges = PriceRange.query.all()
+    areaRanges = AreaRange.query.all()
+    directions = Direction.query.all()
+    
+    if request.method == 'POST':
+        # Lấy thông tin từ các trường tìm kiếm
+        type_ids = request.form.getlist('type-id[]')
+        selected_province_id = request.form.get('province-select')
+        selected_city_id = request.form.get('city-select')
+        address = request.form.get('address-text')
+        selected_price_range_id = request.form.get('price-range-select')
+        selected_area_range_id = request.form.get('area-range-select')
+        # selected_direction_id = request.form.get('direction-select')
+
+        # Chuyển hướng về trang os-contact.html
+        return render_template(
+            'outside/os-contact.html', 
+            type_ids=type_ids, 
+            selected_province_id=selected_province_id, 
+            selected_city_id=selected_city_id, 
+            address=address, 
+            selected_price_range_id=selected_price_range_id, 
+            selected_area_range_id=selected_area_range_id,
+            
+            types=types,
+            provinces=provinces,
+            cities=cities,
+            priceRanges=priceRanges,
+            areaRanges=areaRanges,
+            directions=directions
+        )
+
+    # Hiển thị trang os-contact.html
+    return render_template(
+        'outside/os-contact.html',
+        types=types,
+        provinces=provinces,
+        cities=cities,
+        priceRanges=priceRanges,
+        areaRanges=areaRanges,
+        directions=directions
+    )

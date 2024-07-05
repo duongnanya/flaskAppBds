@@ -99,9 +99,23 @@ $('#save-btn').click(function() {
 function updateMessageField() {
     var messageText = 'Tôi muốn tìm kiếm BĐS như sau:\n\n';
 
-    // Tạo đoạn văn bản từ các giá trị đã chọn
-    if (selectedTypeIds.length > 0) {
-        messageText += 'Loại BĐS: ' + selectedTypeIds.join(', ') + '\n';
+    // Lấy các giá trị từ các phần tử HTML
+    var typeCheckboxes = $('#exampleModal input[name="type-id[]"]:checked');
+    var selectedTypeNames = Array.from(typeCheckboxes).map(function(checkbox) {
+        return $(checkbox).siblings('label').text(); // Lấy tên loại BĐS
+    });
+    var selectedProvinceName = $('#exampleModal #province-select option:selected').text();
+    var selectedCityName = $('#exampleModal #city-select option:selected').text();
+    var addressText = $('#exampleModal #address-text').val();
+    var selectedPriceRange = $('#exampleModal #price-range-select option:selected').text();
+    var priceText = $('#exampleModal #price-text').val();
+    var selectedAreaRange = $('#exampleModal #area-range-select option:selected').text();
+    var areaText = $('#exampleModal #area-text').val();
+    var additionalRequirements = $('#exampleModal #additional-requirements').val();
+
+    // Tạo đoạn văn bản từ các giá trị đã lấy
+    if (selectedTypeNames.length > 0) {
+        messageText += 'Loại BĐS: ' + selectedTypeNames.join(', ') + '\n';
     }
 
     if (selectedProvinceName) {
@@ -116,16 +130,16 @@ function updateMessageField() {
         messageText += 'Tên Đường/phố: ' + addressText + '\n';
     }
 
-    if (selectedPriceRange) {
+    if (selectedPriceRange && selectedPriceRange !== '- Chọn mức giá -') {
         messageText += 'Mức giá: ' + selectedPriceRange + '\n';
-    } else if ($('#price-text').val()) {
-        messageText += 'Giá: ' + $('#price-text').val() + ' ' + priceUnit + '\n';
+    } else if (priceText) {
+        messageText += 'Mức giá: ' + priceText + ' ' + priceUnit + '\n';
     }
 
-    if (selectedAreaRange) {
+    if (selectedAreaRange && selectedAreaRange !== '- Chọn diện tích -') {
         messageText += 'Diện tích: ' + selectedAreaRange + '\n';
-    } else if ($('#area-text').val()) {
-        messageText += 'Diện tích: ' + $('#area-text').val() + ' m²\n';
+    } else if (areaText) {
+        messageText += 'Diện tích: ' + areaText + ' m²\n';
     }
 
     if (additionalRequirements) {
@@ -161,6 +175,46 @@ $checkboxes.on('change', function() {
 
 // Cập nhật nội dung của button ngay khi trang được load
 updateButtonText();
+
+
+//--- xử lý Đề nghị tìm kiếm (được gửi từ os-bds-list.html)
+setTimeout(function() {
+    // Lấy các giá trị từ biến Jinja2
+    var selectedTypeIds = {{ type_ids|safe }};
+    var selectedProvinceId = "{{ selected_province_id }}";
+    var selectedCityId = "{{ selected_city_id }}";
+    var address = "{{ address }}";
+    var selectedPriceRangeId = "{{ selected_price_range_id }}";
+    var selectedAreaRangeId = "{{ selected_area_range_id }}";
+    // var selectedDirectionId = "{{ selected_direction_id }}";
+
+    // Cập nhật các trường trong Modal
+    updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId);
+    updateButtonText();
+    $('#exampleModal').modal('show');
+}, 50); // Chờ 50 miliseconds trước khi chạy script
+
+function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId) {
+    // Cập nhật các checkbox Loại BDS
+    $('#exampleModal input[name="type-id[]"]').each(function() {
+        $(this).prop('checked', selectedTypeIds.includes($(this).val()));
+    });
+
+    // Cập nhật giá trị tỉnh/thành phố
+    $('#exampleModal #province-select').val(selectedProvinceId);
+
+    // Cập nhật giá trị quận/huyện
+    $('#exampleModal #city-select').val(selectedCityId);
+
+    // Cập nhật giá trị đường/phố
+    $('#exampleModal #address-text').val(address);
+
+    // Cập nhật giá trị mức giá
+    $('#exampleModal #price-range-select').val(selectedPriceRangeId);
+
+    // Cập nhật giá trị diện tích
+    $('#exampleModal #area-range-select').val(selectedAreaRangeId);
+}
 
 </script>
 {% endblock %}
