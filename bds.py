@@ -34,55 +34,61 @@ from decorators import *
 bds_bp = Blueprint("bds", __name__)
 
 
-@bds_bp.route("/bds_list")
+@bds_bp.route("/bds_list", methods=["GET", "POST"])
 @login_required
 def bds_list():
-    # Xử lý logic hiển thị danh sách BĐS
-    if (
-        current_user.role_id == Config.ROLE_ADMIN
-        or current_user.role_id == Config.ROLE_EDITOR
-    ):
-        # Hiển thị trang danh sách BĐS cho admin/editor
+    if request.method == "POST":
+        search_keyword = request.form.get("search_keyword")
+        exact_search = request.form.get("exact_search") is not None
+
+        query = Bds.query.filter_by(del_flg=False)
+
+        if search_keyword:
+            if exact_search:
+                query = query.filter(
+                    Bds.title.ilike(f"%{search_keyword}%")
+                    | Bds.content.ilike(f"%{search_keyword}%")
+                    | Bds.address.ilike(f"%{search_keyword}%")
+                )
+                bds_data = get_bds_data(query)
+            else:
+                bds_data = []
+                sub_keywords = search_keyword.split()
+                for i in range(len(sub_keywords), 0, -1):
+                    for j in range(0, len(sub_keywords) - i + 1):
+                        sub_keyword = " ".join(sub_keywords[j : j + i])
+                        query = Bds.query.filter_by(del_flg=False).filter(
+                            Bds.title.ilike(f"%{sub_keyword}%")
+                            | Bds.content.ilike(f"%{sub_keyword}%")
+                            | Bds.address.ilike(f"%{sub_keyword}%")
+                        )
+                        bds_data.extend(get_bds_data(query))
+
+                # Lọc ra những BDS không bị trùng
+                bds_data = list({bds["bds"].id: bds for bds in bds_data}.values())
+
+                # Sắp xếp kết quả theo độ chính xác giảm dần
+                bds_data = sorted(
+                    bds_data,
+                    key=lambda x: -len(x["bds"].title.split())
+                    + -len(x["bds"].content.split())
+                    + -len(x["bds"].address.split()),
+                )
+
+        else:
+            bds_data = get_bds_data(query)
+
+        return render_template(
+            "bds-list.html",
+            bds_data=bds_data,
+            search_keyword=search_keyword,
+            exact_search=exact_search,
+        )
+    else:
+        # Xử lý logic hiển thị danh sách BĐS
         bdses = Bds.query.filter_by(del_flg=False).order_by(Bds.id.asc()).all()
         bds_data = get_bds_data(bdses)
         return render_template("bds-list.html", bds_data=bds_data)
-    else:
-        # Lấy thông tin Code để tìm kiếm BĐS
-        types = Type.query.all()
-        provinces = Province.query.all()
-        cities = City.query.all()
-        priceRanges = PriceRange.query.all()
-        areaRanges = AreaRange.query.all()
-        # directions = Direction.query.all()
-        address = request.args.get('address', '')
-
-        # Lấy danh sách BĐS
-        bdses = Bds.query.filter_by(published_flg=True, del_flg=False)
-        if address:
-            bdses = bdses.filter(Bds.address.like(f"%{address}%"))
-        bdses = bdses.all()
-        bds_data = get_bds_data(bdses)
-
-        # Lấy thông tin Type cho mỗi BĐS
-        bds_types = []
-        for bds in bdses:
-            bds_types_for_bds = Type.query.join(BdsTypeRelation).\
-                filter(BdsTypeRelation.bds_id == bds.id, BdsTypeRelation.del_flg == False, Type.del_flg == False).\
-                all()
-            bds_types.append(bds_types_for_bds)
-
-        return render_template(
-            "outside/os-bds-list.html",
-            bds_data=bds_data,
-            types=types,
-            provinces=provinces,
-            cities=cities,
-            priceRanges=priceRanges,
-            areaRanges=areaRanges,
-            # directions=directions,
-            bds_types=bds_types,
-            address=address,
-        )
 
 
 @bds_bp.route("/bds_detail/<int:bds_id>")
@@ -320,31 +326,9 @@ def bds_delete(bds_id):
     return redirect(url_for("bds.bds_list"))
 
 
-@bds_bp.route("/bds_search", methods=["GET", "POST"])
+@bds_bp.route("/os_bds_list", methods=["GET", "POST"])
 @login_required
-def bds_search():
-    if request.method == "POST":
-        search_keyword = request.form.get("search_keyword")
-
-        query = Bds.query.filter_by(del_flg=False)
-
-        if search_keyword:
-            query = query.filter(
-                Bds.address.ilike(f"%{search_keyword}%")
-                | Bds.title.ilike(f"%{search_keyword}%")
-                | Bds.content.ilike(f"%{search_keyword}%")
-            )
-
-        bds_data = get_bds_data(query)
-
-        return render_template(
-            "bds-list.html", bds_data=bds_data, search_keyword=search_keyword
-        )
-
-
-@bds_bp.route("/os_bds_search", methods=["GET", "POST"])
-@login_required
-def os_bds_search():
+def os_bds_list():
     if request.method == "POST":
         bds_type_ids = request.form.getlist("type-id[]")
         bds_province_id = request.form.get("province-select")
@@ -412,7 +396,28 @@ def os_bds_search():
             # selected_direction_id=direction_id,
         )
 
-    return bds_list()
+    else:
+        # Lấy danh sách BDS đã được public và chưa bị xóa
+        bdses = Bds.query.filter_by(published_flg=True, del_flg=False).all()
+        bds_data = get_bds_data(bdses)
+
+        types = Type.query.all()
+        provinces = Province.query.all()
+        cities = City.query.all()
+        priceRanges = PriceRange.query.all()
+        areaRanges = AreaRange.query.all()
+        # directions = Direction.query.all()
+
+        return render_template(
+            "outside/os-bds-list.html",
+            bds_data=bds_data,
+            types=types,
+            provinces=provinces,
+            cities=cities,
+            priceRanges=priceRanges,
+            areaRanges=areaRanges,
+            # directions=directions,
+        )
 
 
 def get_bds_by_id(bds_id):

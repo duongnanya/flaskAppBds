@@ -85,10 +85,10 @@ def login():
         else:
             session["logged_in"] = True
             login_user(user)
-            if user.role_id == Config.ROLE_ADMIN:
-                return redirect(url_for("user.user_list"))
-            else:
+            if user.role_id == Config.ROLE_ADMIN or user.role_id == Config.ROLE_EDITOR:
                 return redirect(url_for("bds.bds_list"))
+            else:
+                return redirect(url_for("bds.os_bds_list"))
     else:
         return render_template("login.html", Config=Config)
 

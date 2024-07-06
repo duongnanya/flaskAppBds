@@ -26,11 +26,19 @@ $(".clear-search").click(function() {
       </div>
     </div>
   </div>
-  <form action="{{ url_for('bds.bds_search') }}" method="POST" class="mb-3">
+  <form action="{{ url_for('bds.bds_list') }}" method="POST" class="mb-3">
     <div class="input-group mb-3">
-      <input type="text" class="form-control" name="search_keyword" placeholder="Tiêu đề, Nội dung" aria-label="Search" value="{{ search_keyword }}" required>
-      <button class="btn btn-outline-secondary clear-search" type="button">✕</button>
-      <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+        <input type="text" class="form-control" name="search_keyword" placeholder="Tiêu đề, Nội dung" aria-label="Search" value="{{ search_keyword }}">
+        <div class="input-group-text">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="exact_search" id="exactSearchCheckbox" {% if exact_search %}checked{% endif %}>
+                <label class="form-check-label" for="exactSearchCheckbox">
+                    Tìm kiếm chính xác
+                </label>
+            </div>
+        </div>
+        <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+        <button class="btn btn-outline-secondary clear-search" type="button">✕</button>
     </div>
   </form>
 
