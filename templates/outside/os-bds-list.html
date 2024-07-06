@@ -204,7 +204,7 @@ updateButtonText();
     {% if bds_data %}
     {% for bds_item in bds_data %}
     <div class="col-md-3 mb-4">
-      <div class="card">
+      <div class="card h-100">
         <div class="card-img-top-wrapper position-relative">
           {% if bds_item.first_image_url %}
           <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">

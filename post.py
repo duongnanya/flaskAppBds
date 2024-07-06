@@ -133,9 +133,9 @@ def get_post_data(posts):
             "status_name": post.status.name,
             "published_dt": post.published_dt,
             "create_dt": post.create_dt,
-            "create_user_name": post.create_user.username,
+            "create_user_name": post.create_user.name,
             "update_dt": post.update_dt,
-            "update_user_name": post.update_user.username,
+            "update_user_name": post.update_user.name,
             "del_flg": post.del_flg
         })
     return post_data
