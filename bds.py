@@ -4,6 +4,7 @@ from flask import (
     Blueprint,
     app,
     current_app,
+    flash,
     jsonify,
     render_template,
     redirect,
@@ -35,64 +36,70 @@ bds_bp = Blueprint("bds", __name__)
 
 
 @bds_bp.route("/bds_list", methods=["GET", "POST"])
-@login_required
 def bds_list():
-    if request.method == "POST":
-        search_keyword = request.form.get("search_keyword")
-        exact_search = request.form.get("exact_search") is not None
+    if user_is_auth():
+        if user_is_admin_editor():
+            if request.method == "POST":
+                search_keyword = request.form.get("search_keyword")
+                exact_search = request.form.get("exact_search") is not None
 
-        query = Bds.query.filter_by(del_flg=False)
+                query = Bds.query.filter_by(del_flg=False)
 
-        if search_keyword:
-            if exact_search:
-                query = query.filter(
-                    Bds.title.ilike(f"%{search_keyword}%")
-                    | Bds.content.ilike(f"%{search_keyword}%")
-                    | Bds.address.ilike(f"%{search_keyword}%")
-                )
-                bds_data = get_bds_data(query)
-            else:
-                bds_data = []
-                sub_keywords = search_keyword.split()
-                for i in range(len(sub_keywords), 0, -1):
-                    for j in range(0, len(sub_keywords) - i + 1):
-                        sub_keyword = " ".join(sub_keywords[j : j + i])
-                        query = Bds.query.filter_by(del_flg=False).filter(
-                            Bds.title.ilike(f"%{sub_keyword}%")
-                            | Bds.content.ilike(f"%{sub_keyword}%")
-                            | Bds.address.ilike(f"%{sub_keyword}%")
+                if search_keyword:
+                    if exact_search:
+                        query = query.filter(
+                            Bds.title.ilike(f"%{search_keyword}%")
+                            | Bds.content.ilike(f"%{search_keyword}%")
+                            | Bds.address.ilike(f"%{search_keyword}%")
                         )
-                        bds_data.extend(get_bds_data(query))
+                        bds_data = get_bds_data(query)
+                    else:
+                        bds_data = []
+                        sub_keywords = search_keyword.split()
+                        for i in range(len(sub_keywords), 0, -1):
+                            for j in range(0, len(sub_keywords) - i + 1):
+                                sub_keyword = " ".join(sub_keywords[j : j + i])
+                                query = Bds.query.filter_by(del_flg=False).filter(
+                                    Bds.title.ilike(f"%{sub_keyword}%")
+                                    | Bds.content.ilike(f"%{sub_keyword}%")
+                                    | Bds.address.ilike(f"%{sub_keyword}%")
+                                )
+                                bds_data.extend(get_bds_data(query))
 
-                # Lọc ra những BDS không bị trùng
-                bds_data = list({bds["bds"].id: bds for bds in bds_data}.values())
+                        # Lọc ra những BDS không bị trùng
+                        bds_data = list({bds["bds"].id: bds for bds in bds_data}.values())
 
-                # Sắp xếp kết quả theo độ chính xác giảm dần
-                bds_data = sorted(
-                    bds_data,
-                    key=lambda x: -len(x["bds"].title.split())
-                    + -len(x["bds"].content.split())
-                    + -len(x["bds"].address.split()),
+                        # Sắp xếp kết quả theo độ chính xác giảm dần
+                        bds_data = sorted(
+                            bds_data,
+                            key=lambda x: -len(x["bds"].title.split())
+                            + -len(x["bds"].content.split())
+                            + -len(x["bds"].address.split()),
+                        )
+
+                else:
+                    bds_data = get_bds_data(query)
+
+                return render_template(
+                    "bds-list.html",
+                    bds_data=bds_data,
+                    search_keyword=search_keyword,
+                    exact_search=exact_search,
                 )
-
+            else:
+                # Xử lý logic hiển thị danh sách BĐS
+                bdses = Bds.query.filter_by(del_flg=False).order_by(Bds.id.asc()).all()
+                bds_data = get_bds_data(bdses)
+                return render_template("bds-list.html", bds_data=bds_data)
         else:
-            bds_data = get_bds_data(query)
-
-        return render_template(
-            "bds-list.html",
-            bds_data=bds_data,
-            search_keyword=search_keyword,
-            exact_search=exact_search,
-        )
+            # Hiển thị trang outside nếu Role = User
+            return redirect(url_for("bds.os_bds_list"))
     else:
-        # Xử lý logic hiển thị danh sách BĐS
-        bdses = Bds.query.filter_by(del_flg=False).order_by(Bds.id.asc()).all()
-        bds_data = get_bds_data(bdses)
-        return render_template("bds-list.html", bds_data=bds_data)
+        flash(Config.MSG_LOGIN_REQUIRED)
+        return redirect(url_for("login"))
 
 
 @bds_bp.route("/bds_detail/<int:bds_id>")
-@login_required
 def bds_detail(bds_id):
     bds = get_bds_by_id(bds_id)
 
@@ -111,46 +118,45 @@ def bds_detail(bds_id):
 
     # Lấy thông tin Province
     bds_province = Province.query.get(bds.province_id)
+    is_favorite = False
 
-    is_favorite = (
-        BdsUserRelation.query.filter_by(
-            user_id=current_user.id, bds_id=bds.id, del_flg=False
-        ).first()
-        is not None
+    if user_is_auth():
+        is_favorite = (
+            BdsUserRelation.query.filter_by(
+                user_id=current_user.id, bds_id=bds.id, del_flg=False
+            ).first()
+            is not None
+        )
+        if user_is_admin_editor():
+            # Hiển thị trang bds-detail.html cho admin/editor
+            return render_template(
+                "bds-detail.html",
+                bds_images=bds_images,
+                bds=bds,
+                bds_types=bds_types,
+                bds_city=bds_city,
+                bds_province=bds_province,
+                is_favorite=is_favorite,
+            )
+        
+    # Hiển thị trang os-bds-detail.html nếu chưa đăng nhập hoặc Role = User
+    return render_template(
+        "outside/os-bds-detail.html",
+        bds_images=bds_images,
+        bds=bds,
+        bds_types=bds_types,
+        bds_city=bds_city,
+        bds_province=bds_province,
+        address=bds.address,
+        price_from=format_currency(bds.price_from),
+        price_to=format_currency(bds.price_to),
+        is_favorite=is_favorite,
     )
-
-    if (
-        current_user.role_id == Config.ROLE_ADMIN
-        or current_user.role_id == Config.ROLE_EDITOR
-    ):
-        # Hiển thị trang bds-detail.html cho admin/editor
-        return render_template(
-            "bds-detail.html",
-            bds_images=bds_images,
-            bds=bds,
-            bds_types=bds_types,
-            bds_city=bds_city,
-            bds_province=bds_province,
-            is_favorite=is_favorite,
-        )
-    else:
-        # Hiển thị trang os-bds-detail.html cho người dùng có Role = 3
-        return render_template(
-            "outside/os-bds-detail.html",
-            bds_images=bds_images,
-            bds=bds,
-            bds_types=bds_types,
-            bds_city=bds_city,
-            bds_province=bds_province,
-            address=bds.address,
-            price_from=format_currency(bds.price_from),
-            price_to=format_currency(bds.price_to),
-            is_favorite=is_favorite,
-        )
 
 
 @bds_bp.route("/bds_add_edit", methods=["GET", "POST"])
 @login_required
+@admin_editor_required
 def bds_add_edit():
     bds_id = request.args.get("bds_id")
     bds = get_bds_by_id(bds_id) if bds_id else None
@@ -306,6 +312,7 @@ def bds_add_edit():
 
 @bds_bp.route("/bds_delete/<int:bds_id>")
 @login_required
+@admin_editor_required
 def bds_delete(bds_id):
     bds = get_bds_by_id(bds_id)
     if bds:
@@ -327,8 +334,18 @@ def bds_delete(bds_id):
 
 
 @bds_bp.route("/os_bds_list", methods=["GET", "POST"])
-@login_required
 def os_bds_list():
+    # Initialize query and data
+    query = Bds.query.filter_by(published_flg=True, del_flg=False)
+    bds_data = None
+    bds_type_ids = []
+    bds_province_id = None
+    bds_city_id = None
+    price_range_id = None
+    area_range_id = None
+    address_text = ""
+    
+    # Handle POST request (filtering)
     if request.method == "POST":
         bds_type_ids = request.form.getlist("type-id[]")
         bds_province_id = request.form.get("province-select")
@@ -338,7 +355,6 @@ def os_bds_list():
         address_text = request.form.get("address-text")
         # direction_id = request.form.get("direction-select")
 
-        query = Bds.query.filter_by(published_flg=True, del_flg=False)
         if bds_type_ids:
             bds_ids = (
                 db.session.query(BdsTypeRelation.bds_id)
@@ -368,56 +384,37 @@ def os_bds_list():
 
         bds_data = get_bds_data(query)
 
-        types = Type.query.all()
-        provinces = Province.query.all()
-        if bds_province_id:
-            cities = City.query.all()
-        else:
-            cities = []
-        priceRanges = PriceRange.query.all()
-        areaRanges = AreaRange.query.all()
-        # directions = Direction.query.all()
-
-        return render_template(
-            "outside/os-bds-list.html",
-            bds_data=bds_data,
-            types=types,
-            selected_type_ids=bds_type_ids,
-            provinces=provinces,
-            selected_province_id=bds_province_id,
-            cities=cities,
-            selected_city_id=bds_city_id,
-            priceRanges=priceRanges,
-            selected_price_range_id=price_range_id,
-            areaRanges=areaRanges,
-            selected_area_range_id=area_range_id,
-            address=address_text,
-            # directions=directions,
-            # selected_direction_id=direction_id,
-        )
-
-    else:
-        # Lấy danh sách BDS đã được public và chưa bị xóa
+    # Fetch data for the template
+    if bds_data is None:
         bdses = Bds.query.filter_by(published_flg=True, del_flg=False).all()
         bds_data = get_bds_data(bdses)
 
-        types = Type.query.all()
-        provinces = Province.query.all()
-        cities = City.query.all()
-        priceRanges = PriceRange.query.all()
-        areaRanges = AreaRange.query.all()
-        # directions = Direction.query.all()
+    # Fetch other data for the template
+    types = Type.query.all()
+    provinces = Province.query.all()
+    cities = City.query.all() if bds_province_id else []
+    priceRanges = PriceRange.query.all()
+    areaRanges = AreaRange.query.all()
+    # directions = Direction.query.all()
 
-        return render_template(
-            "outside/os-bds-list.html",
-            bds_data=bds_data,
-            types=types,
-            provinces=provinces,
-            cities=cities,
-            priceRanges=priceRanges,
-            areaRanges=areaRanges,
-            # directions=directions,
-        )
+    # Render the template
+    return render_template(
+        "outside/os-bds-list.html",
+        bds_data=bds_data,
+        types=types,
+        selected_type_ids=bds_type_ids or [],  # Handle None case
+        provinces=provinces,
+        selected_province_id=bds_province_id,
+        cities=cities,
+        selected_city_id=bds_city_id,
+        priceRanges=priceRanges,
+        selected_price_range_id=price_range_id,
+        areaRanges=areaRanges,
+        selected_area_range_id=area_range_id,
+        address=address_text,
+        # directions=directions,
+        # selected_direction_id=direction_id,
+    )
 
 
 def get_bds_by_id(bds_id):
@@ -461,12 +458,15 @@ def get_bds_data(query):
         bds_city = City.query.get(bds.city_id)
         bds_province = Province.query.get(bds.province_id)
 
-        is_favorite = (
-            BdsUserRelation.query.filter_by(
-                user_id=current_user.id, bds_id=bds.id, del_flg=False
-            ).first()
-            is not None
-        )
+        if user_is_auth():
+            is_favorite = (
+                BdsUserRelation.query.filter_by(
+                    user_id=current_user.id, bds_id=bds.id, del_flg=False
+                ).first()
+                is not None
+            )
+        else:
+            is_favorite = False
 
         bds_data.append(
             {

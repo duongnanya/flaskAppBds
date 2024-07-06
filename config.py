@@ -30,3 +30,6 @@ class Config:
     STATUS_NEED_FIX = 3
     STATUS_OK = 4
     STATUS_PUBLISHED = 5
+
+    # Message
+    MSG_LOGIN_REQUIRED = "Bạn cần đăng nhập để truy cập trang này."

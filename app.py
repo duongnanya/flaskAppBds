@@ -10,6 +10,7 @@ from flask_login import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from decorators import clear_user_is_authenticated
 from models import User, db
 from config import Config
 
@@ -39,7 +40,7 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized_callback():
-    flash("Bạn cần đăng nhập để truy cập trang này.")
+    flash(Config.MSG_LOGIN_REQUIRED)
     return redirect(url_for("login"))
 
 
@@ -98,6 +99,7 @@ def login():
 def logout():
     logout_user()
     session.pop("logged_in", None)
+    clear_user_is_authenticated()
     return redirect(url_for("home"))
 
 

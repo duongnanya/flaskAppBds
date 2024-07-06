@@ -6,16 +6,35 @@ from models import Category, db
 category_bp = Blueprint("category", __name__)
 
 
-@category_bp.route("/category_list")
+@category_bp.route("/category_list", methods=["GET", "POST"])
 @login_required
 @admin_required
 def category_list():
-    categories = Category.query.filter_by(del_flg=False).order_by(Category.id.asc()).all()
-    return render_template("category-list.html", categories=categories)
+    if request.method == "POST":
+        search_keyword = request.form.get("search_keyword")
+        if search_keyword:
+            categories = (
+                Category.query.filter(
+                    (Category.name.ilike(f"%{search_keyword}%")) | 
+                    (Category.description.ilike(f"%{search_keyword}%")),
+                    Category.del_flg == False
+                )
+                .order_by(Category.id.asc())
+                .all()
+            )
+            return render_template(
+                "category-list.html", categories=categories, search_keyword=search_keyword
+            )
+        else:
+            return redirect(url_for("category.category_list"), code=303)  # Redirect if no search term
+    else:
+        categories = Category.query.filter_by(del_flg=False).order_by(Category.id.asc()).all()
+        return render_template("category-list.html", categories=categories)
 
 
 @category_bp.route("/category_detail/<int:category_id>")
 @login_required
+@admin_required
 def category_detail(category_id):
     category = get_category_by_id(category_id)
     return render_template("category-detail.html", category=category)
@@ -23,6 +42,7 @@ def category_detail(category_id):
 
 @category_bp.route("/category_add_edit", methods=["GET", "POST"])
 @login_required
+@admin_required
 def category_add_edit():
     category_id = request.args.get("category_id")
     category = get_category_by_id(category_id) if category_id else None
@@ -53,31 +73,13 @@ def category_add_edit():
 
 @category_bp.route("/category_delete/<int:category_id>")
 @login_required
+@admin_required
 def category_delete(category_id):
     category = get_category_by_id(category_id)
     if category:
         category.del_flg = True
         db.session.commit()
     return redirect("/category_list")
-
-
-@category_bp.route("/category_search", methods=["GET", "POST"])
-@login_required
-def category_search():
-    if request.method == "POST":
-        search_keyword = request.form.get("search_keyword")
-        categories = (
-            Category.query.filter(
-                Category.name.ilike(f"%{search_keyword}%"), Category.del_flg == False
-            )
-            .order_by(Category.id.asc())
-            .all()
-        )
-        return render_template(
-            "category-list.html", categories=categories, search_keyword=search_keyword
-        )
-
-    return redirect(url_for("category.category_list"), code=303)
 
 
 def get_category_by_id(category_id):

@@ -29,6 +29,23 @@ def admin_editor_required(func):
     return decorated_view
 
 
+def clear_user_is_authenticated():
+    current_user = None
+    return 0
+
+
+def user_is_auth():
+    return current_user.is_authenticated
+
+
+def user_is_admin_editor():
+    is_admin_editor = False
+    if user_is_auth():
+        is_admin_editor = current_user.role_id == Config.ROLE_ADMIN or current_user.role_id == Config.ROLE_EDITOR
+
+    return is_admin_editor
+
+
 # def format_currency(value):
 #     if value >= 1000000000:
 #         return f"{value / 1000000000:.1f} tỷ"

@@ -6,16 +6,35 @@ from models import Status, db
 status_bp = Blueprint("status", __name__)
 
 
-@status_bp.route("/status_list")
+@status_bp.route("/status_list", methods=["GET", "POST"])
 @login_required
 @admin_required
 def status_list():
-    statuses = Status.query.filter_by(del_flg=False).order_by(Status.id.asc()).all()
-    return render_template("status-list.html", statuses=statuses)
+    if request.method == "POST":
+        search_keyword = request.form.get("search_keyword")
+        if search_keyword:
+            statuses = (
+                Status.query.filter(
+                    (Status.name.ilike(f"%{search_keyword}%")) | 
+                    (Status.description.ilike(f"%{search_keyword}%")),
+                    Status.del_flg == False
+                )
+                .order_by(Status.id.asc())
+                .all()
+            )
+            return render_template(
+                "status-list.html", statuses=statuses, search_keyword=search_keyword
+            )
+        else:
+            return redirect(url_for("status.status_list"), code=303)  # Redirect if no search term
+    else:
+        statuses = Status.query.filter_by(del_flg=False).order_by(Status.id.asc()).all()
+        return render_template("status-list.html", statuses=statuses)
 
 
 @status_bp.route("/status_detail/<int:status_id>")
 @login_required
+@admin_required
 def status_detail(status_id):
     status = get_status_by_id(status_id)
     return render_template("status-detail.html", status=status)
@@ -23,6 +42,7 @@ def status_detail(status_id):
 
 @status_bp.route("/status_add_edit", methods=["GET", "POST"])
 @login_required
+@admin_required
 def status_add_edit():
     status_id = request.args.get("status_id")
     status = get_status_by_id(status_id) if status_id else None
@@ -53,6 +73,7 @@ def status_add_edit():
 
 @status_bp.route("/status_delete/<int:status_id>")
 @login_required
+@admin_required
 def status_delete(status_id):
     status = get_status_by_id(status_id)
     if status:
@@ -63,6 +84,7 @@ def status_delete(status_id):
 
 @status_bp.route("/status_search", methods=["GET", "POST"])
 @login_required
+@admin_required
 def status_search():
     if request.method == "POST":
         search_keyword = request.form.get("search_keyword")

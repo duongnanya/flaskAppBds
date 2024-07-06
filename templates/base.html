@@ -24,7 +24,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 {% set is_admin = current_user.role_id == Config.ROLE_ADMIN %}
-                {% set is_admin_editor = current_user.role_id == Config.ROLE_ADMIN or current_user.role_id == Config.ROLE_USER %}
+                {% set is_admin_editor = current_user.role_id == Config.ROLE_ADMIN or current_user.role_id == Config.ROLE_EDITOR %}
                 {% set is_user = current_user.role_id == Config.ROLE_USER %}
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if is_admin %}
@@ -52,16 +52,22 @@
                     </div>
                     {% endif %}
                     <li class="nav-item">
+                        {% if is_admin_editor %}
                         <a class="nav-link" href="{{ url_for('bds.bds_list') }}">★ Bds</a>
+                        {% else %}
+                        <a class="nav-link" href="{{ url_for('bds.os_bds_list') }}">★ Bds</a>
+                        {% endif %}
                     </li>
                     <li class="nav-item">
+                        {% if is_admin_editor %}
                         <a class="nav-link" href="{{ url_for('post.post_list') }}">★ Post</a>
+                        {% else %}
+                        <a class="nav-link" href="{{ url_for('post.os_post_list') }}">★ Post</a>
+                        {% endif %}
                     </li>
-                    {% if is_user %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('contact.contact') }}">★ Contact</a>
                     </li>
-                    {% endif %}
                 </ul>
                 <div class="btn-group">
                     {% if current_user.is_authenticated %}
