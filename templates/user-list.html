@@ -24,7 +24,7 @@ $(".clear-search").click(function() {
     </div>
     <form action="{{ url_for('user.user_list') }}" method="POST" class="mb-3">
       <div class="input-group mb-3">
-        <input type="text" class="form-control" name="search_keyword" placeholder="Tên, Tên đăng nhập, Email" aria-label="Search" value="{{ search_keyword }}">
+        <input type="text" class="form-control" name="search_keyword" placeholder="Tên, Tên đăng nhập, Email, Nhu cầu" aria-label="Search" value="{{ search_keyword }}">
         <button class="btn btn-outline-secondary clear-search" type="button">✕</button>
         <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
       </div>
@@ -37,6 +37,7 @@ $(".clear-search").click(function() {
                 <th>Tên</th>
                 <th>Tên đăng nhập</th>
                 <th>Email</th>
+                <th>Nhu cầu</th>
                 <th>Tên quyền</th>
                 <th>CRUD</th>
             </tr>
@@ -48,6 +49,7 @@ $(".clear-search").click(function() {
                 <td>{{ user.name }}</td>
                 <td>{{ user.username }}</td>
                 <td>{{ user.email }}</td>
+                <td>{{ user.need }}</td>
                 <td>{{ user.role.name }}</td>
                 <td>
                     <a href="{{ url_for('user.user_detail', user_id=user.id) }}" class="btn btn-primary">Xem</a>

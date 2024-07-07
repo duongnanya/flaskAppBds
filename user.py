@@ -8,7 +8,7 @@ from flask_login import (
     login_required,
 )
 from decorators import *
-from models import Role, User, db
+from models import Bds, BdsUserRelation, Role, User, db
 
 user_bp = Blueprint("user", __name__)
 
@@ -22,9 +22,11 @@ def user_list():
         if search_keyword:
             users = (
                 User.query.filter(
-                    (User.name.ilike(f"%{search_keyword}%")) |
-                    (User.email.ilike(f"%{search_keyword}%")),
-                    User.del_flg == False
+                    (User.name.ilike(f"%{search_keyword}%"))
+                    | (User.username.ilike(f"%{search_keyword}%"))
+                    | (User.email.ilike(f"%{search_keyword}%"))
+                    | (User.need.ilike(f"%{search_keyword}%")),
+                    User.del_flg == False,
                 )
                 .order_by(User.id.asc())
                 .all()
@@ -41,15 +43,25 @@ def user_list():
 
 @user_bp.route("/user_detail/<int:user_id>")
 @login_required
-@admin_required
 def user_detail(user_id):
     user = get_user_by_id(user_id)
-    return render_template("user-detail.html", user=user)
+
+    # Fetch saved properties for the user (include the title)
+    saved_bds = (
+        BdsUserRelation.query.filter_by(user_id=user.id, del_flg=False)
+        .join(Bds)
+        .with_entities(Bds.id, Bds.title)  # Include the title in the query
+        .all()
+    )
+
+    if user_is_admin_editor():
+        return render_template("user-detail.html", user=user)
+    else:
+        return render_template("outside/os-user-detail.html", user=user, saved_bds=saved_bds)
 
 
 @user_bp.route("/user_add_edit", methods=["GET", "POST"])
 @login_required
-@admin_required
 def user_add_edit():
     user_id = request.args.get("user_id")
     user = get_user_by_id(user_id) if user_id else None
@@ -58,21 +70,32 @@ def user_add_edit():
     if request.method == "POST":
         name = request.form.get("name")
         username = request.form.get("username")
-        password = request.form.get("password")
-        role_id = request.form.get("role")
+        # TODOdnn: password xử lý phức tạp (cần xác nhận), nên mục này để sau
+        # password = request.form.get("password")   
+        # khởi tạo giá trị mặc định, gán giá trị bên dưới, tùy quyền User
+        role_id = 0
+        need = ''
+
+        if not user_is_admin_editor():
+            need = request.form.get("need")
+
+        if user_is_admin_editor():
+            role_id = request.form.get("role")
 
         if user:
             user.name = name
             user.username = username
-            user.password = password
+            # user.password = password
             user.role_id = role_id
+            user.need = need
             user.update_user_id = current_user.id
         else:
             new_user = User(
                 name=name,
                 username=username,
-                password=password,
+                # password=password,
                 role_id=role_id,
+                need = need,
                 create_user_id=current_user.id,
                 update_user_id=current_user.id,
             )
@@ -80,9 +103,17 @@ def user_add_edit():
             db.session.flush()  # Flush để lấy id của new_user
 
         db.session.commit()
-        return redirect(url_for("user.user_list"))
 
-    return render_template("user-add-edit.html", user=user, roles=roles)
+        if user_is_admin_editor():
+            return redirect(url_for("user.user_list"))
+        else:
+            # Return the detail of the newly created or updated user
+            return redirect(url_for("user.user_detail", user_id=user.id if user else new_user.id))
+        
+    if user_is_admin_editor():
+        return render_template("user-add-edit.html", user=user, roles=roles)
+    else:
+        return render_template("outside/os-user-add-edit.html", user=user)
 
 
 @user_bp.route("/user_delete/<int:user_id>")

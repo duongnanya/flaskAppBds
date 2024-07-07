@@ -1,17 +1,6 @@
 {% extends 'base.html' %}
 
-{% block dnnScript %}
-<script>
-$(".delete-btn").click(function(e) {
-    e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
-    
-    if (confirm("Bạn có chắc chắn muốn xóa?")) {
-        // Nếu người dùng xác nhận, chuyển hướng đến URL
-        window.location.href = $(this).attr("href");
-    }
-});
-</script>
-{% endblock %}
+{% block dnnScript %}{% endblock %}
 
 {% block title %}Thông tin User{% endblock %}
 
@@ -23,7 +12,6 @@ $(".delete-btn").click(function(e) {
       </div>
       <div class="col-md-2">
         <div class="d-flex justify-content-end mt-2">
-            <a href="{{ url_for('user.user_delete', user_id=user.id) }}" class="btn btn-danger delete-btn" style="margin-right: 5px;">Xóa</a>
             <a href="{{ url_for('user.user_add_edit', user_id=user.id) }}" class="btn btn-primary">Sửa</a>
         </div>
       </div>
@@ -47,18 +35,22 @@ $(".delete-btn").click(function(e) {
         </tr>
         <tr>
             <th>Nhu cầu</th>
-            <td>
-                {% if user.role.name in ['Admin', 'Editor'] %}
-                    {{ Config.MSG_FUNC_NOT_AVAILABLE_TO_AE }}
-                {% else %}
-                    {{ user.need }}
-                {% endif %}
-            </td>
+            <td>{{ user.need }}</td>
         </tr>
         <tr>
-            <th>Tên quyền</th>
-            <td>{{ user.role.name }}</td>
-        </tr>
+          <th>Tin đã lưu</th>
+          <td>
+              {% if saved_bds %}
+                  <ul>
+                      {% for bds in saved_bds %}
+                          <li><a href="{{ url_for('bds.bds_detail', bds_id=bds.id) }}">{{ bds.title }}</a></li>
+                      {% endfor %}
+                  </ul>
+              {% else %}
+                  Chưa có tin đã lưu.
+              {% endif %}
+          </td>
+      </tr>
     </table>
 </div>
 {% endblock %}

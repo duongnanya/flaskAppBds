@@ -30,23 +30,11 @@
     </div>
     <div class="form-group">
       <label for="need">Nhu cầu:</label>
-      {% if user and user.role.name in ['Admin', 'Editor'] %}
-        {{ Config.MSG_FUNC_NOT_AVAILABLE_TO_AE }}
-      {% else %}
-      <textarea type="text" class="form-control" id="need" name="need" rows="3" placeholder="Nhu cầu" disabled>{{ user.need }}</textarea>
-      {% endif %}
+      <textarea type="text" class="form-control" id="need" name="need" rows="3" placeholder="Nhu cầu">{{ user.need }}</textarea>
     </div>
     <div class="form-group">
       <label for="password">Mật khẩu:</label>
       <input type="password" class="form-control" id="password" name="password" placeholder="Mật khẩu">
-    </div>
-    <div class="form-group">
-      <label for="role">Quyền:</label>
-      <select class="form-select" name="role" id="role">
-        {% for role in roles %}
-          <option value="{{ role.id }}" {% if user and user.role_id == role.id %}selected{% endif %}>{{ role.name }}</option>
-        {% endfor %}
-      </select>
     </div>
   </form>
 </div>
