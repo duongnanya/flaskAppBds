@@ -67,7 +67,9 @@ def bds_list():
                                 bds_data.extend(get_bds_data(query))
 
                         # Lọc ra những BDS không bị trùng
-                        bds_data = list({bds["bds"].id: bds for bds in bds_data}.values())
+                        bds_data = list(
+                            {bds["bds"].id: bds for bds in bds_data}.values()
+                        )
 
                         # Sắp xếp kết quả theo độ chính xác giảm dần
                         bds_data = sorted(
@@ -109,9 +111,15 @@ def bds_detail(bds_id):
     )
 
     # Lấy thông tin Type
-    bds_types = Type.query.join(BdsTypeRelation).\
-        filter(BdsTypeRelation.bds_id == bds.id, BdsTypeRelation.del_flg == False, Type.del_flg == False).\
-        all()
+    bds_types = (
+        Type.query.join(BdsTypeRelation)
+        .filter(
+            BdsTypeRelation.bds_id == bds.id,
+            BdsTypeRelation.del_flg == False,
+            Type.del_flg == False,
+        )
+        .all()
+    )
 
     # Lấy thông tin City
     bds_city = City.query.get(bds.city_id)
@@ -138,7 +146,7 @@ def bds_detail(bds_id):
                 bds_province=bds_province,
                 is_favorite=is_favorite,
             )
-        
+
     # Hiển thị trang os-bds-detail.html nếu chưa đăng nhập hoặc Role = User
     return render_template(
         "outside/os-bds-detail.html",
@@ -211,7 +219,7 @@ def bds_add_edit():
                     bds_id=bds.id,
                     type_id=type_id,
                     create_user_id=current_user.id,
-                    update_user_id=current_user.id
+                    update_user_id=current_user.id,
                 )
                 db.session.add(bds_type_relation)
             db.session.commit()
@@ -317,14 +325,20 @@ def bds_delete(bds_id):
     bds = get_bds_by_id(bds_id)
     if bds:
         # Xóa các BdsTypeRelation liên quan đến BĐS này
-        BdsTypeRelation.query.filter_by(bds_id=bds.id, del_flg=False).update({BdsTypeRelation.del_flg: True})
-        
+        BdsTypeRelation.query.filter_by(bds_id=bds.id, del_flg=False).update(
+            {BdsTypeRelation.del_flg: True}
+        )
+
         # Xóa các ảnh liên quan trong BdsImage
-        BdsImage.query.filter_by(bds_id=bds.id, del_flg=False).update({BdsImage.del_flg: True})
-        
+        BdsImage.query.filter_by(bds_id=bds.id, del_flg=False).update(
+            {BdsImage.del_flg: True}
+        )
+
         # Xóa các liên kết trong BdsUserRelation
-        BdsUserRelation.query.filter_by(bds_id=bds.id, del_flg=False).update({BdsUserRelation.del_flg: True})
-        
+        BdsUserRelation.query.filter_by(bds_id=bds.id, del_flg=False).update(
+            {BdsUserRelation.del_flg: True}
+        )
+
         db.session.commit()
 
         # Đánh dấu BĐS là đã xóa
@@ -344,7 +358,7 @@ def os_bds_list():
     price_range_id = None
     area_range_id = None
     address_text = ""
-    
+
     # Handle POST request (filtering)
     if request.method == "POST":
         bds_type_ids = request.form.getlist("type-id[]")
@@ -451,9 +465,15 @@ def get_bds_data(query):
         )
 
         # Lấy thông tin về các loại BĐS
-        bds_types = Type.query.join(BdsTypeRelation).\
-            filter(BdsTypeRelation.bds_id == bds.id, BdsTypeRelation.del_flg == False, Type.del_flg == False).\
-            all()
+        bds_types = (
+            Type.query.join(BdsTypeRelation)
+            .filter(
+                BdsTypeRelation.bds_id == bds.id,
+                BdsTypeRelation.del_flg == False,
+                Type.del_flg == False,
+            )
+            .all()
+        )
 
         bds_city = City.query.get(bds.city_id)
         bds_province = Province.query.get(bds.province_id)
