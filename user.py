@@ -25,7 +25,8 @@ def user_list():
                     (User.name.ilike(f"%{search_keyword}%"))
                     | (User.username.ilike(f"%{search_keyword}%"))
                     | (User.email.ilike(f"%{search_keyword}%"))
-                    | (User.need.ilike(f"%{search_keyword}%")),
+                    | (User.need.ilike(f"%{search_keyword}%"))
+                    | (User.phone.ilike(f"%{search_keyword}%")),
                     User.del_flg == False,
                 )
                 .order_by(User.id.asc())
@@ -70,6 +71,7 @@ def user_add_edit():
     if request.method == "POST":
         name = request.form.get("name")
         username = request.form.get("username")
+        phone = request.form.get("phone")
         # TODOdnn: password xử lý phức tạp (cần xác nhận), nên mục này để sau
         # password = request.form.get("password")   
         # khởi tạo giá trị mặc định, gán giá trị bên dưới, tùy quyền User
@@ -88,6 +90,7 @@ def user_add_edit():
             # user.password = password
             user.role_id = role_id
             user.need = need
+            user.phone = phone
             user.update_user_id = current_user.id
         else:
             new_user = User(
@@ -96,6 +99,7 @@ def user_add_edit():
                 # password=password,
                 role_id=role_id,
                 need = need,
+                phone = phone,
                 create_user_id=current_user.id,
                 update_user_id=current_user.id,
             )

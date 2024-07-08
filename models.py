@@ -231,6 +231,7 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("c_role.id"))
     img_id = db.Column(db.Integer, db.ForeignKey("m_img.id"))
     need = db.Column(db.String(255), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
     create_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp())
     create_user_id = db.Column(db.Integer)
     update_dt = db.Column(db.TIMESTAMP, nullable=False, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
@@ -240,7 +241,7 @@ class User(UserMixin, db.Model):
     role = db.relationship("Role", backref="users")
     image = db.relationship("Image", backref="user")
 
-    def __init__(self, name, username, email, password, role_id, img_id, need=None, create_user_id=None, update_user_id=None):
+    def __init__(self, name, username, email, password, role_id, img_id, need=None, phone=None, create_user_id=None, update_user_id=None):
         self.name = name
         self.username = username
         self.email = email
@@ -248,6 +249,7 @@ class User(UserMixin, db.Model):
         self.role_id = role_id
         self.img_id = img_id
         self.need = need
+        self.phone = phone
         self.create_user_id = create_user_id
         self.update_user_id = update_user_id
 

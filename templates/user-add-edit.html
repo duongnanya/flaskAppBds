@@ -37,6 +37,10 @@
       {% endif %}
     </div>
     <div class="form-group">
+      <label for="phone">Sđt:</label>
+      <input type="text" class="form-control" id="phone" name="phone" value="{{ user.phone if user else '' }}" placeholder="Số điện thoại">
+    </div>
+    <div class="form-group">
       <label for="password">Mật khẩu:</label>
       <input type="password" class="form-control" id="password" name="password" placeholder="Mật khẩu">
     </div>
