@@ -6,10 +6,10 @@
 <div class="container">
   <form method="POST" action="{{ url_for('status.status_add_edit', status_id=status.id if status else None) }}">
     <div class="row">
-      <div class="col-md-10">
+      <div class="col-10">
         <h2>{% if status %}Chỉnh sửa Trạng Thái{% else %}Thêm Trạng Thái{% endif %}</h2>
       </div>
-      <div class="col-md-2">
+      <div class="col-2">
         <div class="d-flex justify-content-end mt-2">
           <button type="submit" class="btn btn-primary">Lưu</button>
         </div>

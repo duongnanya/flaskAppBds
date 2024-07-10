@@ -62,8 +62,8 @@ function checkFavoriteStatus(bdsId, $icon) {
 {% block content %}
 <div class="container os-bds-detail-html my-5">
   <div class="row">
-    <div class="col-8 col-md-8">
-      <div class="col-12 col-md-12">
+    <div class="col-8 col-8">
+      <div class="col-12 col-12">
         <div id="bds-images-carousel" class="carousel slide mb-2" data-ride="carousel">
           <div class="carousel-inner">
             {% for bds_image in bds_images %}
@@ -92,13 +92,13 @@ function checkFavoriteStatus(bdsId, $icon) {
         </div>
         <div class="row">
           {% for bds_image in bds_images %}
-          <div class="col-md-3 mb-3">
+          <div class="col-3 mb-3">
             <img src="{{ url_for('static', filename='uploads/' + bds_image.image.filename) }}" class="img-thumbnail" alt="{{ bds_image.image.filename }}">
           </div>
           {% endfor %}
         </div>
       </div>
-      <div class="col-12 col-md-12">
+      <div class="col-12 col-12">
           <h3 class="mb-3">{{ bds.title }}</h3>
           <p class="mb-2"><strong>Loại BĐS:</strong>
               ({{ bds_types|count }})
@@ -114,7 +114,7 @@ function checkFavoriteStatus(bdsId, $icon) {
           <p class="mb-3">{{ bds.content }}</p>
       </div>
     </div>
-    <div class="col-4 col-md-4">
+    <div class="col-4 col-4">
       <img src="{{ url_for('static', filename='uploads/LAT-bds.jpg') }}" 
       class=""  alt="LAT" style="width: -webkit-fill-available;">
     </div>

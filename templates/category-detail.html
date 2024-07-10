@@ -18,10 +18,10 @@ $(".delete-btn").click(function(e) {
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col-md-10">
+    <div class="col-10">
       <h1>Thông tin Danh Mục</h1>
     </div>
-    <div class="col-md-2">
+    <div class="col-2">
       <div class="d-flex justify-content-end mt-2">
         <a href="{{ url_for('category.category_delete', category_id=category.id) }}" class="btn btn-danger delete-btn" style="margin-right: 5px;">Xóa</a>
         <a href="{{ url_for('category.category_add_edit', category_id=category.id) }}" class="btn btn-primary">Sửa</a>

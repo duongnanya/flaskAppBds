@@ -6,20 +6,20 @@ $('.carousel-item').each(function(index) {
     $(this).attr('data-bs-slide-to', index);
 });
 
-$('.col-md-2 img').click(function() {
-    var index = $(this).closest('.col-md-2').index();
+$('.col-2 img').click(function() {
+    var index = $(this).closest('.col-2').index();
     $('#carouselExample').carousel(index);
 });
 
 $('#carouselExample').on('slide.bs.carousel', function(event) {
     var index = $(event.relatedTarget).index();
-    $('.col-md-2 img').removeClass('active-thumbnail');
-    $('.col-md-2 img').eq(index).addClass('active-thumbnail');
+    $('.col-2 img').removeClass('active-thumbnail');
+    $('.col-2 img').eq(index).addClass('active-thumbnail');
 });
 
 // Gán class active-thumbnail cho ảnh hiện tại
 var currentIndex = $('#carouselExample .carousel-item.active').index();
-$('.col-md-2 img').eq(currentIndex).addClass('active-thumbnail');
+$('.col-2 img').eq(currentIndex).addClass('active-thumbnail');
 
 $(".delete-btn").click(function(e) {
     e.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
@@ -37,10 +37,10 @@ $(".delete-btn").click(function(e) {
 {% block content %}
 <div class="container">
     <div class="row">
-      <div class="col-md-10">
+      <div class="col-10">
         <h1>Thông tin Bds</h1>
       </div>
-      <div class="col-md-2">
+      <div class="col-2">
         <div class="d-flex justify-content-end mt-2">
             <a href="{{ url_for('bds.bds_delete', bds_id=bds.id) }}" class="btn btn-danger delete-btn" style="margin-right: 5px;">Xóa</a>
             <a href="{{ url_for('bds.bds_add_edit', bds_id=bds.id) }}" class="btn btn-primary">Sửa</a>
@@ -59,7 +59,7 @@ $(".delete-btn").click(function(e) {
                 <div class="row">
                     {% if bds_images %}
                         {% for bdsImage in bds_images %}
-                        <div class="col-md-3 mb-3">
+                        <div class="col-3 mb-3">
                             <img src="{{ url_for('static', filename='uploads/' + bdsImage.image.filename) }}" class="img-thumbnail" alt="{{ bdsImage.image.filename }}">
                         </div>
                         {% endfor %}

@@ -65,7 +65,7 @@ function updateButtonText() {
     var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
 
     if (checkedCount === 0) {
-        $button.text('Chọn loại');
+        $button.text('Loại BĐS');
     } else if (checkedCount === 1) {
         $button.text(firstCheckedLabel);
     } else {
@@ -167,7 +167,7 @@ function getCitiesByProvince(provinceId) {
                     <li>
                         <div class="container">
                             <div class="col-12">
-                                <input type="text" class="form-control col-6" id="keyword-city" placeholder="keyword" aria-label="keyword" aria-describedby="addon-wrapping">
+                                <input type="text" class="form-control col-6" id="keyword-city" placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
                             </div>
                         </div>
                     </li>
@@ -277,7 +277,7 @@ function updateProvinceCitySelect() {
 {% block content %}
 <div class="container os-bds-list-html">
   <div class="row">
-    <div class="col-md-12">
+    <div class="col-12">
       <h1>Danh sách Bds</h1>
     </div>
   </div>
@@ -288,13 +288,13 @@ function updateProvinceCitySelect() {
         <div class="col-3">
           <div class="dropdown">
               <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                Chọn loại
+                Loại BĐS
               </button>
-              <div class="dropdown-menu p-4 col-12">
+              <div class="dropdown-menu p-1 col-12">
                   <p>(Có thể chọn nhiều)</p>
                   <ul class="list-group">
                     {% for type in types %}
-                    <li class="list-group-item">
+                    <li class="list-group-item p-2">
                         <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}"
                         {% if type.id|string in selected_type_ids %}checked{% endif %}>
                         <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
@@ -359,35 +359,24 @@ function updateProvinceCitySelect() {
     </div>
     <div class="row mb-3">
         <div class="col-3">
-            <label for="pricerange-select" class="form-label">Mức giá:</label>
             <select class="form-control" name="price-range-select" id="price-range-select">
-                <option value="">- Chọn mức giá -</option>
+                <option value="">- Mức giá -</option>
                 {% for priceRange in priceRanges %}
                 <option value="{{ priceRange.id }}" {% if selected_price_range_id == priceRange.id|string %}selected{% endif %}>{{ priceRange.name }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-3">
-            <label for="arearange-select" class="form-label">Diện tích:</label>
             <select class="form-control" name="area-range-select" id="area-range-select">
-                <option value="">- Chọn diện tích -</option>
+                <option value="">- Diện tích -</option>
                 {% for areaRange in areaRanges %}
                 <option value="{{ areaRange.id }}" {% if selected_area_range_id == areaRange.id|string %}selected{% endif %}>{{ areaRange.name }}</option>
                 {% endfor %}
             </select>
         </div>
-        <!-- <div class="col-3">
-            <label for="direction-select" class="form-label">Hướng:</label>
-            <select class="form-control" name="direction-select" id="direction-select">
-                <option value="">- Chọn hướng -</option>
-                {% for direction in directions %}
-                <option value="{{ direction.id }}" {% if selected_direction_id == direction.id|string %}selected{% endif %}>{{ direction.name }}</option>
-                {% endfor %}
-            </select>
-        </div> -->
         <div class="col-3">
           <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-          <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.send_request') }}">Đề nghị tìm kiếm</button>
+          <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
         </div>
     </div>
   </form>
@@ -395,7 +384,7 @@ function updateProvinceCitySelect() {
   <div class="row">
     {% if bds_data %}
     {% for bds_item in bds_data %}
-    <div class="col-md-3 mb-4">
+    <div class="col-3 mb-4">
       <div class="card h-100">
         <div class="card-img-top-wrapper position-relative">
           {% if bds_item.first_image_url %}
@@ -431,7 +420,7 @@ function updateProvinceCitySelect() {
     </div>
     {% endfor %}
     {% else %}
-    <div class="col-md-12 mb-4">Không có BĐS phù hợp</div>
+    <div class="col-12 mb-4">Không có BĐS phù hợp</div>
     {% endif %}
   </div>
 </div>

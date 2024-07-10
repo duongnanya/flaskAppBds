@@ -18,10 +18,10 @@ $(".delete-btn").click(function(e) {
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col-md-10">
+    <div class="col-10">
       <h1>Thông tin Trạng Thái</h1>
     </div>
-    <div class="col-md-2">
+    <div class="col-2">
       <div class="d-flex justify-content-end mt-2">
         <a href="{{ url_for('status.status_delete', status_id=status.id) }}" class="btn btn-danger delete-btn" style="margin-right: 5px;">Xóa</a>
         <a href="{{ url_for('status.status_add_edit', status_id=status.id) }}" class="btn btn-primary">Sửa</a>

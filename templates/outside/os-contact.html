@@ -333,7 +333,7 @@ if (alertTrigger) {
   <h2>Gửi tin nhắn</h2>
   
   <form action="#" method="POST" class="row g-3 needs-validation" novalidate>
-    <div class="col-md-6">
+    <div class="col-6">
       <label for="name" class="form-label">Họ và tên:</label>
       <input type="text" class="form-control" id="name" name="name" required 
              value="{{ user.name if user else '' }}">  <!-- Display user's name if logged in -->
@@ -344,7 +344,7 @@ if (alertTrigger) {
         Vui lòng nhập họ và tên.
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-6">
       <label for="email" class="form-label">Email:</label>
       <input type="email" class="form-control" id="email" name="email" required 
              value="{{ user.email if user else '' }}">  <!-- Display user's email if logged in -->
@@ -355,7 +355,7 @@ if (alertTrigger) {
         Vui lòng nhập địa chỉ email hợp lệ.
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-6">
       <label for="phone" class="form-label">SĐT:</label>
       <input type="tel" class="form-control" id="phone" name="phone" required 
              value="{{ user.phone if user else '' }}">  <!-- Display user's phone if logged in -->
@@ -366,7 +366,7 @@ if (alertTrigger) {
         Vui lòng nhập số điện thoại hợp lệ.
       </div>
     </div>
-    <div class="col-md-12">
+    <div class="col-12">
       <div class="mb-3">
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="radio" name="btnradioA" id="btnradioA1" value="option1" checked>
