@@ -32,7 +32,7 @@ $('#province-select').on('change', function() {
             success: function(data) {
                 $('#city-select').prop('disabled', false);
                 $('#city-select').empty();
-                $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+                $('#city-select').append('<option value="">- Quận / huyện -</option>');
                 $.each(data, function(index, city) {
                     $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
                 });
@@ -45,7 +45,7 @@ $('#province-select').on('change', function() {
     } else {
         $('#city-select').prop('disabled', true);
         $('#city-select').empty();
-        $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
+        $('#city-select').append('<option value="">- Quận / huyện -</option>');
     }
 });
 
@@ -60,7 +60,7 @@ $('#address-text').on('input', function() {
 $('#price-range-select').change(function() {
     selectedPriceRange = $('#price-range-select option:selected').text();
     $('#price-text').val(''); // Reset ô Nhập giá khi chọn Mức giá
-    $('input[name="btnradio"]').prop('checked', false); // Reset nút Triệu/Tỷ khi chọn Mức giá
+    $('input[name="btnradioArea"]').prop('checked', false); // Reset nút Triệu/Tỷ khi chọn Mức giá
 });
 
 $('#area-range-select').change(function() {
@@ -70,11 +70,11 @@ $('#area-range-select').change(function() {
 
 $('#price-text').on('input', function() {
     selectedPriceRange = '';
-    $('input[name="btnradio"][id="btnradio2"]').prop('checked', true); // Chọn lại nút "Triệu"
+    $('input[name="btnradioArea"][id="btnradioArea2"]').prop('checked', true); // Chọn lại nút "Triệu"
     $('#price-range-select').val('');
 });
 
-$('input[name="btnradio"]').change(function() {
+$('input[name="btnradioArea"]').change(function() {
     if ($(this).attr('id') === 'btnradio2') {
         priceUnit = 'Triệu';
     } else {
@@ -92,12 +92,51 @@ $('#message2').on('input', function() {
 });
 
 $('#save-btn').click(function() {
-    updateMessageField();
-    $('#exampleModal').modal('hide');
+    // Kiểm tra điều kiện hiển thị alert trước khi cập nhật nội dung
+    if (validateForm()) {
+        updateSubjectMessageField();
+        $('#exampleModal').modal('hide');
+        
+        // Ẩn alert nếu form hợp lệ
+        $('.alert').hide(); 
+    }
 });
 
-function updateMessageField() {
-    var messageText = 'Tôi muốn tìm kiếm BĐS như sau:\n\n';
+function validateForm() {
+    var selectedOption = $('input[name="btnradioB"]:checked').attr('id');
+    var selectedProvinceName = $('#exampleModal #province-select option:selected').text();
+    var selectedCityName = $('#exampleModal #city-select option:selected').text();
+    var addressText = $('#exampleModal #address-text').val();
+
+    if (selectedOption === "btnradioB2" && 
+        (selectedProvinceName === '- Tỉnh/Thành phố -' || 
+         selectedCityName === '- Quận/Huyện -' || 
+         addressText === '')) {
+        // Kiểm tra xem đã có alert đang hiển thị chưa
+        if (!$('.alert').is(':visible')) {
+            appendAlert(
+              'Vui lòng nhập Tỉnh/Thành phố, Quận/Huyện và Đường phố, Số nhà.'
+              + '\nChúng tôi sẽ sớm liên hệ lại, hẹn lịch gặp.'
+              , 'danger');
+        }
+        return false; // Trả về false để ngăn không cho cập nhật nội dung
+    }
+    return true; // Trả về true nếu điều kiện hợp lệ
+}
+
+function updateSubjectMessageField() {
+    var messageText;
+
+    // Lấy ID của nút Radio được chọn
+    var selectedOption = $('input[name="btnradioB"]:checked').attr('id');
+
+    // Đặt câu mở đầu Tin nhắn tùy vào nút được chọn
+    if (selectedOption === "btnradioB1") {
+        messageText = 'Tôi muốn tìm kiếm BĐS\n\n';
+    } else if (selectedOption === "btnradioB2") {
+        messageText = 'Tôi muốn đăng bán BĐS\n\n';
+    }
+    $('#subject').val(messageText);
 
     // Lấy các giá trị từ các phần tử HTML
     var typeCheckboxes = $('#exampleModal input[name="type-id[]"]:checked');
@@ -118,11 +157,13 @@ function updateMessageField() {
         messageText += 'Loại BĐS: ' + selectedTypeNames.join(', ') + '\n';
     }
 
-    if (selectedProvinceName) {
+    // Kiểm tra Province có giá trị trước khi cho vào Tin nhắn
+    if (selectedProvinceName && selectedProvinceName !== '- Tỉnh/Thành phố -') {
         messageText += 'Tỉnh/Thành phố: ' + selectedProvinceName + '\n';
     }
 
-    if (selectedCityName) {
+    // Kiểm tra City có giá trị trước khi cho vào Tin nhắn
+    if (selectedCityName && selectedCityName !== '- Quận/Huyện -') {
         messageText += 'Quận/Huyện: ' + selectedCityName + '\n';
     }
 
@@ -130,13 +171,13 @@ function updateMessageField() {
         messageText += 'Tên Đường/phố: ' + addressText + '\n';
     }
 
-    if (selectedPriceRange && selectedPriceRange !== '- Chọn mức giá -') {
+    if (selectedPriceRange && selectedPriceRange !== '- Mức giá -') {
         messageText += 'Mức giá: ' + selectedPriceRange + '\n';
     } else if (priceText) {
         messageText += 'Mức giá: ' + priceText + ' ' + priceUnit + '\n';
     }
 
-    if (selectedAreaRange && selectedAreaRange !== '- Chọn diện tích -') {
+    if (selectedAreaRange && selectedAreaRange !== '- Diện tích -') {
         messageText += 'Diện tích: ' + selectedAreaRange + '\n';
     } else if (areaText) {
         messageText += 'Diện tích: ' + areaText + ' m²\n';
@@ -150,7 +191,6 @@ function updateMessageField() {
     $('#message').val(messageText);
 }
 
-
 //--- hiển thị tên Type được chọn trên Dropdown
 var $dropdown = $('.dropdown');
 var $button = $dropdown.find('#type-dropdown');
@@ -161,7 +201,7 @@ function updateButtonText() {
     var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
 
     if (checkedCount === 0) {
-        $button.text('Chọn loại');
+        $button.text('Loại BĐS');
     } else if (checkedCount === 1) {
         $button.text(firstCheckedLabel);
     } else {
@@ -176,23 +216,28 @@ $checkboxes.on('change', function() {
 // Cập nhật nội dung của button ngay khi trang được load
 updateButtonText();
 
-
-//--- xử lý Đề nghị tìm kiếm (được gửi từ os-bds-list.html)
+//--- xử lý Yêu cầu tìm kiếm (được gửi từ os-bds-list.html)
 setTimeout(function() {
     // Lấy các giá trị từ biến Jinja2
-    var selectedTypeIds = {{ type_ids|safe }};
-    var selectedProvinceId = "{{ selected_province_id }}";
-    var selectedCityId = "{{ selected_city_id }}";
-    var address = "{{ address }}";
-    var selectedPriceRangeId = "{{ selected_price_range_id }}";
-    var selectedAreaRangeId = "{{ selected_area_range_id }}";
-    // var selectedDirectionId = "{{ selected_direction_id }}";
+    var isFromBds = "{{ is_from_bds }}"
+    if (isFromBds) {
+        var selectedTypeIds = "{{ type_ids|safe }}";
+        var selectedProvinceId = "{{ selected_province_id }}";
+        var selectedCityId = "{{ selected_city_id }}";
+        var address = "{{ address }}";
+        var selectedPriceRangeId = "{{ selected_price_range_id }}";
+        var selectedAreaRangeId = "{{ selected_area_range_id }}";
+        // var selectedDirectionId = "{{ selected_direction_id }}";
 
-    // Cập nhật các trường trong Modal
-    updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId);
-    updateButtonText();
-    $('#exampleModal').modal('show');
-}, 50); // Chờ 50 miliseconds trước khi chạy script
+        // Cập nhật các trường trong Modal
+        updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId);
+        updateButtonText();
+        $('#exampleModal').modal('show');
+
+        // Check the btnradioA2 radio button
+        $('input[id=btnradioA2]').attr('checked', 'checked');
+    }
+}, 1); // Chờ ooo miliseconds trước khi chạy script
 
 function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId) {
     // Cập nhật các checkbox Loại BDS
@@ -214,6 +259,46 @@ function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, 
 
     // Cập nhật giá trị diện tích
     $('#exampleModal #area-range-select').val(selectedAreaRangeId);
+}
+
+//--- thay đổi Subject tùy nút được chọn
+function updateSubject() {
+    var selectedValue = $('input[name="btnradioA"]:checked').val();
+
+    if (selectedValue === "option1") {
+        $('#subject').val("Đặt câu hỏi");
+    } else if (selectedValue === "option2") {
+        $('#subject').val("Yêu cầu tìm kiếm / đăng bán");
+    }
+}
+
+// Call the function on page load
+updateSubject();
+
+// Event listener for radio button changes
+$('input[name="btnradioA"]').change(function() {
+  updateSubject();
+});
+
+//--- hiện Alert, bắt buộc nhập Tỉnh/TP, Quận/huyện, Đường phố, Số nhà nếu Đăng bán
+const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+const appendAlert = (message, type) => {
+  const wrapper = document.createElement('div')
+  wrapper.innerHTML = [
+    `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+    `   <div>${message}</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+  ].join('')
+
+  alertPlaceholder.append(wrapper)
+}
+
+const alertTrigger = document.getElementById('liveAlertBtn')
+if (alertTrigger) {
+  alertTrigger.addEventListener('click', () => {
+    appendAlert('Nice, you triggered this alert message!', 'success')
+  })
 }
 
 </script>
@@ -249,49 +334,67 @@ function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, 
   
   <form action="#" method="POST" class="row g-3 needs-validation" novalidate>
     <div class="col-md-6">
-        <label for="name" class="form-label">Họ và tên:</label>
-        <input type="text" class="form-control" id="name" name="name" required>
-        <div class="valid-feedback">
-            Looks good!
-        </div>
-        <div class="invalid-feedback">
-            Vui lòng nhập họ và tên.
-        </div>
+      <label for="name" class="form-label">Họ và tên:</label>
+      <input type="text" class="form-control" id="name" name="name" required 
+             value="{{ user.name if user else '' }}">  <!-- Display user's name if logged in -->
+      <div class="valid-feedback">
+        Looks good!
+      </div>
+      <div class="invalid-feedback">
+        Vui lòng nhập họ và tên.
+      </div>
     </div>
     <div class="col-md-6">
-        <label for="email" class="form-label">Email:</label>
-        <input type="email" class="form-control" id="email" name="email" required>
-        <div class="valid-feedback">
-            Looks good!
-        </div>
-        <div class="invalid-feedback">
-            Vui lòng nhập địa chỉ email hợp lệ.
-        </div>
+      <label for="email" class="form-label">Email:</label>
+      <input type="email" class="form-control" id="email" name="email" required 
+             value="{{ user.email if user else '' }}">  <!-- Display user's email if logged in -->
+      <div class="valid-feedback">
+        Looks good!
+      </div>
+      <div class="invalid-feedback">
+        Vui lòng nhập địa chỉ email hợp lệ.
+      </div>
     </div>
     <div class="col-md-6">
-        <label for="phone" class="form-label">SĐT:</label>
-        <input type="tel" class="form-control" id="phone" name="phone" required>
-        <div class="valid-feedback">
-            Looks good!
-        </div>
-        <div class="invalid-feedback">
-            Vui lòng nhập số điện thoại hợp lệ.
-        </div>
+      <label for="phone" class="form-label">SĐT:</label>
+      <input type="tel" class="form-control" id="phone" name="phone" required 
+             value="{{ user.phone if user else '' }}">  <!-- Display user's phone if logged in -->
+      <div class="valid-feedback">
+        Looks good!
+      </div>
+      <div class="invalid-feedback">
+        Vui lòng nhập số điện thoại hợp lệ.
+      </div>
     </div>
     <div class="col-md-12">
-        <label for="message" class="form-label">
-            Tin nhắn:
-            <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Đề nghị tìm kiếm
-            </button>
-        </label>
-        <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+      <div class="mb-3">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="btnradioA" id="btnradioA1" value="option1" checked>
+          <label class="form-check-label" for="btnradioA1">Đặt câu hỏi</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="btnradioA" id="btnradioA2" value="option2">
+          <label class="form-check-label" for="btnradioA2" data-bs-toggle="modal" data-bs-target="#exampleModal">Tìm kiếm / Đăng bán</label>
+        </div>
+      </div>
+      <div class="mb-3">
+        <input type="text" class="form-control" id="subject" name="subject" required placeholder="Chủ đề">
+        <div class="valid-feedback">
+          Looks good!
+        </div>
+        <div class="invalid-feedback">
+          Vui lòng nhập tiêu đề.
+        </div>
+      </div>
+      <div class="mb-3">
+        <textarea class="form-control" id="message" name="message" rows="10" required placeholder="Tin nhắn"></textarea>
         <div class="valid-feedback">
             Looks good!
         </div>
         <div class="invalid-feedback">
             Vui lòng nhập tin nhắn.
         </div>
+      </div>
     </div>
     <div class="col-12">
         <button class="btn btn-primary" type="submit">Gửi</button>
@@ -304,15 +407,23 @@ function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, 
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Sửa tiêu chí</h1>
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Tiêu chí tìm kiếm</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label for="" class="form-label">Loại BĐS:</label>
+          <div class="btn-group col-12" role="group" aria-label="Basic radio toggle button group">
+            <input type="radio" class="btn-check" name="btnradioB" id="btnradioB1" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="btnradioB1">Tìm kiếm</label>
+
+            <input type="radio" class="btn-check" name="btnradioB" id="btnradioB2" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradioB2">Đăng bán</label>
+          </div>
+        </div>
+        <div class="mb-3">
           <div class="dropdown">
               <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                Chọn loại
+                Loại BĐS
               </button>
               <div class="dropdown-menu p-4 col-12">
                   <p>(Có thể chọn nhiều)</p>
@@ -330,18 +441,16 @@ function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, 
         </div>
         <div class="row mb-3">
           <div class="col-6">
-            <label for="province-select" class="form-label">Tỉnh/Thành phố:</label>
             <select class="form-control" name="province-select" id="province-select">
-                <option value="">- Chọn Tỉnh/Thành phố -</option>
+                <option value="">- Tỉnh/Thành phố -</option>
                 {% for province in provinces %}
                 <option value="{{ province.id }}" {% if selected_province_id == province.id|string %}selected{% endif %}>{{ province.name }}</option>
                 {% endfor %}
             </select>
           </div>
           <div class="col-6">
-            <label for="city-select" class="form-label">Quận/Huyện:</label>
-            <select class="form-control" name="city-select" id="city-select" disabled>
-                <option value="">- Chọn Quận/Huyện -</option>
+            <select class="form-control" name="city-select" id="city-select">
+                <option value="">- Quận/Huyện -</option>
                 {% for city in cities %}
                 <option value="{{ city.id }}" {% if selected_city_id == city.id|string %}selected{% endif %}>{{ city.name }}</option>
                 {% endfor %}
@@ -349,61 +458,48 @@ function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, 
           </div>
         </div>
         <div class="mb-3">
-            <label for="address-text" class="form-label">Đường/phố:</label>
             <div class="input-group">
               <input type="text" class="form-control" name="address-text" id="address-text" placeholder="Tên Đường/phố" aria-label="Search" value="{{ address }}">
             </div>
         </div>
+        <div id="liveAlertPlaceholder"></div>
         <div class="row mb-3">
           <div class="col-6">
-            <label for="pricerange-select" class="form-label">Mức giá:</label>
             <select class="form-control" name="price-range-select" id="price-range-select">
-                <option value="">- Chọn mức giá -</option>
+                <option value="">- Mức giá -</option>
                 {% for priceRange in priceRanges %}
                 <option value="{{ priceRange.id }}" {% if selected_price_range_id == priceRange.id|string %}selected{% endif %}>{{ priceRange.name }}</option>
                 {% endfor %}
             </select>
           </div>
           <div class="col-6">
-            <label for="price-text" class="form-label">Nhập giá:</label>
             <div class="input-group" role="group" aria-label="Basic radio toggle button group">
-              <input type="text" class="form-control" id="price-text" placeholder="price" aria-label="price">
+              <input type="text" class="form-control" id="price-text" placeholder="Nhập giá" aria-label="price">
             
-              <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-              <label class="btn btn-outline-primary" for="btnradio2">Triệu</label>
+              <input type="radio" class="btn-check" name="btnradioArea" id="btnradioArea2" autocomplete="off">
+              <label class="btn btn-outline-primary" for="btnradioArea2">Triệu</label>
             
-              <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+              <input type="radio" class="btn-check" name="btnradioArea" id="btnradio3" autocomplete="off">
               <label class="btn btn-outline-primary" for="btnradio3">Tỷ</label>
             </div>
           </div>
         </div>
         <div class="row mb-3">
           <div class="col-6">
-            <label for="arearange-select" class="form-label">Diện tích:</label>
             <select class="form-control" name="area-range-select" id="area-range-select">
-                <option value="">- Chọn diện tích -</option>
+                <option value="">- Diện tích -</option>
                 {% for areaRange in areaRanges %}
                 <option value="{{ areaRange.id }}" {% if selected_area_range_id == areaRange.id|string %}selected{% endif %}>{{ areaRange.name }}</option>
                 {% endfor %}
             </select>
           </div>
           <div class="col-6">
-            <label for="area-text" class="form-label">Nhập diện tích:</label>
             <div class="input-group">
-              <input type="text" class="form-control" id="area-text" placeholder="area" aria-label="area" aria-describedby="basic-addon2">
+              <input type="text" class="form-control" id="area-text" placeholder="Nhập diện tích" aria-label="area" aria-describedby="basic-addon2">
               <span class="input-group-text" id="basic-addon2">m²</span>
             </div>
           </div>
         </div>
-        <!-- <div class="">
-            <label for="direction-select" class="form-label">Hướng:</label>
-            <select class="form-control" name="direction-select" id="direction-select">
-                <option value="">- Chọn hướng -</option>
-                {% for direction in directions %}
-                <option value="{{ direction.id }}" {% if selected_direction_id == direction.id|string %}selected{% endif %}>{{ direction.name }}</option>
-                {% endfor %}
-            </select>
-        </div> -->
         <div class="row mb-3">
           <div class="col-12">
             <label for="message2" class="form-label">
