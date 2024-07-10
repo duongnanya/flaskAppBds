@@ -374,6 +374,10 @@ def os_bds_list():
             bds_province_id = int(bds_province_id) if bds_province_id != 'None' else 0
         if bds_city_id:
             bds_city_id = int(bds_city_id) if bds_city_id != 'None' else 0
+        if price_range_id:
+            price_range_id = int(price_range_id) if price_range_id != 'None' else 0
+        if area_range_id:
+            area_range_id = int(area_range_id) if area_range_id != 'None' else 0
 
         if bds_type_ids:
             bds_ids = (

@@ -60,25 +60,27 @@ var $dropdown = $('.dropdown');
 var $button = $dropdown.find('#type-dropdown');
 var $checkboxes = $dropdown.find('input[type="checkbox"]');
 
-function updateButtonText() {
-    var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
-    var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
+function updateTypeButtonText() {
+  var $dropdown = $('#type-dropdown').parent('.dropdown');
+  var $button = $dropdown.find('#type-dropdown');
+  var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
+  var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
 
-    if (checkedCount === 0) {
-        $button.text('Loại BĐS');
-    } else if (checkedCount === 1) {
-        $button.text(firstCheckedLabel);
-    } else {
-        $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
-    }
+  if (checkedCount === 0) {
+    $button.text('Loại BĐS');
+    $button.addClass('btn-outline-secondary').removeClass('btn-secondary'); // Thêm class btn-outline-secondary, bỏ class btn-secondary
+  } else if (checkedCount === 1) {
+    $button.text(firstCheckedLabel);
+    $button.addClass('btn-secondary').removeClass('btn-outline-secondary'); // Thêm class btn-secondary, bỏ class btn-outline-secondary
+  } else {
+    $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
+    $button.addClass('btn-secondary').removeClass('btn-outline-secondary'); // Thêm class btn-secondary, bỏ class btn-outline-secondary
+  }
 }
 
 $checkboxes.on('change', function() {
-    updateButtonText();
+    updateTypeButtonText();
 });
-
-// Cập nhật nội dung của button ngay khi trang được load
-updateButtonText();
 
 //--- xử lý Find Tỉnh thành theo Keyword
 // Khi dropdown button được nhấn
@@ -130,7 +132,8 @@ $('input[type=hidden][id=province-select]').on('change', function() {
     $('#dropdown-toggle-province').text(' Tỉnh/Thành phố ');
 
     // Reset dropdown City
-    $('#dropdown-toggle-city').text(' Quận/Huyện ').prop('disabled', true); 
+    $('#dropdown-toggle-city').text(' Quận/Huyện ').prop('disabled', true)
+      .addClass("btn-outline-secondary").removeClass("btn-secondary"); 
     $('#dropdown-menu-city').empty(); // Xóa danh sách city hiện tại (nếu có)
 
     // Reset #city-select về 0
@@ -140,7 +143,7 @@ $('input[type=hidden][id=province-select]').on('change', function() {
   }
 
   // Cập nhật class cho dropdown button
-  updateDropdownButtonClasses();
+  updateProvinceButtonClass();
 });
 
 // --- Sử dụng event delegation để bắt sự kiện click trên item-link-city
@@ -155,24 +158,98 @@ $('#dropdown-menu-city').on('click', '.item-link-city', function() {
 // --- Xử lý khi input hidden #city-select thay đổi
 $('input[type=hidden][id=city-select]').on('change', function() {
   var cityId = $(this).val();
-
-  // Cập nhật class cho dropdown button
-  updateDropdownButtonClasses();
+  
+  // Cập nhật class cho dropdown button City
+  updateCityButtonClass();
 });
 
-// Hàm cập nhật class cho dropdown button
-function updateDropdownButtonClasses() {
+// --- Sử dụng event delegation để bắt sự kiện click trên item-link-price
+$('#dropdown-menu-price').on('click', '.item-link-price', function() {
+  var text = $(this).text();
+  var priceId = $(this).data('value');
+
+  $('#dropdown-toggle-price').text(text);
+  $('input[type=hidden][id=price-range-select]').val(priceId).trigger('change');
+});
+
+// --- Xử lý khi input hidden #price-range-select thay đổi
+$('input[type=hidden][id=price-range-select]').on('change', function() {
+  var priceId = $(this).val();
+
+  // Kiểm tra nếu priceId = 0
+  if (priceId === '0' || priceId === 0) { 
+    // Reset dropdown Price
+    $('#dropdown-toggle-price').text(' Mức giá ');
+  }
+
+  // Cập nhật class cho dropdown button Price
+  updatePriceButtonClass();
+});
+
+// --- Sử dụng event delegation để bắt sự kiện click trên item-link-area
+$('#dropdown-menu-area').on('click', '.item-link-area', function() {
+  var text = $(this).text();
+  var areaId = $(this).data('value');
+
+  $('#dropdown-toggle-area').text(text);
+  $('input[type=hidden][id=area-range-select]').val(areaId).trigger('change');
+});
+
+// --- Xử lý khi input hidden #area-range-select thay đổi
+$('input[type=hidden][id=area-range-select]').on('change', function() {
+  var areaId = $(this).val();
+
+  // Kiểm tra nếu areaId = 0
+  if (areaId === '0' || areaId === 0) {
+    // Reset dropdown Area
+    $('#dropdown-toggle-area').text(' Diện tích ');
+  }
+
+  // Cập nhật class cho dropdown button Area
+  updateAreaButtonClass();
+});
+
+// --- Hàm cập nhật class cho dropdown button Province
+function updateProvinceButtonClass() {
   var provinceId = $('#province-select').val();
+
+  if (provinceId && provinceId !== '0' && provinceId !== 'None') {
+    $('#dropdown-toggle-province').addClass('btn-secondary').removeClass('btn-outline-secondary');
+  } else {
+    $('#dropdown-toggle-province').addClass('btn-outline-secondary').removeClass('btn-secondary');
+  }
+}
+
+// --- Hàm cập nhật class cho dropdown button City
+function updateCityButtonClass() {
   var cityId = $('#city-select').val();
 
-  // Kiểm tra giá trị của provinceId và cityId
-  if (provinceId && provinceId !== '0' && provinceId !== 'None' 
-      && cityId && cityId !== '0' && cityId !== 'None') {
-    // Thêm btn-secondary, bỏ btn-outline-secondary
-    $('#dropdown-toggle-province, #dropdown-toggle-city').addClass('btn-secondary').removeClass('btn-outline-secondary');
+  if (cityId && cityId !== '0' && cityId !== 'None') {
+    $('#dropdown-toggle-city').addClass('btn-secondary').removeClass('btn-outline-secondary');
   } else {
-    // Thêm btn-outline-secondary, bỏ btn-secondary
-    $('#dropdown-toggle-province, #dropdown-toggle-city').addClass('btn-outline-secondary').removeClass('btn-secondary');
+    $('#dropdown-toggle-city').addClass('btn-outline-secondary').removeClass('btn-secondary');
+  }
+}
+
+// --- Hàm cập nhật class cho dropdown button Price
+function updatePriceButtonClass() {
+  var priceId = $('#price-range-select').val();
+
+  if (priceId && priceId !== '0' && priceId !== 'None') {
+    $('#dropdown-toggle-price').addClass('btn-secondary').removeClass('btn-outline-secondary');
+  } else {
+    $('#dropdown-toggle-price').addClass('btn-outline-secondary').removeClass('btn-secondary');
+  }
+}
+
+// --- Hàm cập nhật class cho dropdown button Area
+function updateAreaButtonClass() {
+  var areaId = $('#area-range-select').val();
+
+  if (areaId && areaId !== '0' && areaId !== 'None') {
+    $('#dropdown-toggle-area').addClass('btn-secondary').removeClass('btn-outline-secondary');
+  } else {
+    $('#dropdown-toggle-area').addClass('btn-outline-secondary').removeClass('btn-secondary');
   }
 }
 
@@ -246,15 +323,23 @@ function getCitiesByProvince(provinceId) {
     });
   } else {
     $('#dropdown-menu-city').empty();
-    $('#dropdown-toggle-city').prop('disabled', true).text(' Quận/Huyện ');
+    $('#dropdown-toggle-city').prop('disabled', true).text(' Quận/Huyện ')
+      .addClass("btn-outline-secondary").removeClass("btn-secondary"); ;
   }
 }
 
 // --- khi load trang, cập nhật tên Nút thành tên của Tỉnh/Thành phố có value từ hidden (giữ nguyên)
 var selectedProvinceId = "{{ selected_province_id }}";
 var selectedCityId = "{{ selected_city_id }}";
+var selectedPriceId = "{{ selected_price_range_id }}";
+var selectedAreaId = "{{ selected_area_range_id }}";
 
+// --- xử lý ngay khi Load trang
 setTimeout(function() {
+
+  // Cập nhật nội dung của button ngay khi trang được load
+  updateTypeButtonText();
+
   if (selectedProvinceId) {
     var selectedProvinceItem = $('.item-link-province[data-value="' + selectedProvinceId + '"]');
     if (selectedProvinceItem.length > 0) {
@@ -271,6 +356,24 @@ setTimeout(function() {
       $('#dropdown-toggle-city').text(selectedCityName);
     }
     $('input[type=hidden][id=city-select]').val(selectedCityId).trigger('change');
+  }
+
+  if (selectedPriceId) {
+    var selectedPriceItem = $('.item-link-price[data-value="' + selectedPriceId + '"]');
+    if (selectedPriceItem.length > 0) {
+      var selectedPriceName = selectedPriceItem.text();
+      $('#dropdown-toggle-price').text(selectedPriceName);
+    }
+    $('input[type=hidden][id=price-range-select]').val(selectedPriceId).trigger('change');
+  }
+
+  if (selectedAreaId) {
+    var selectedAreaItem = $('.item-link-area[data-value="' + selectedAreaId + '"]');
+    if (selectedAreaItem.length > 0) {
+      var selectedAreaName = selectedAreaItem.text();
+      $('#dropdown-toggle-area').text(selectedAreaName);
+    }
+    $('input[type=hidden][id=area-range-select]').val(selectedAreaId).trigger('change');
   }
 }, 1);
 </script>
@@ -290,6 +393,10 @@ setTimeout(function() {
             value="{% if selected_province_id %}{{ selected_province_id }}{% else %}0{% endif %}">
     <input type="hidden" name="city-select" id="city-select"
             value="{{ selected_city_id }}">
+    <input type="hidden" name="price-range-select" id="price-range-select"
+            value="{% if selected_price_range_id %}{{ selected_price_range_id }}{% else %}0{% endif %}">
+    <input type="hidden" name="area-range-select" id="area-range-select"
+            value="{% if selected_area_range_id %}{{ selected_area_range_id }}{% else %}0{% endif %}">
     <div class="row mb-3">
         <div class="col-3">
           <div class="dropdown">
@@ -367,26 +474,44 @@ setTimeout(function() {
         </div>
     </div>
     <div class="row mb-3">
-        <div class="col-3">
-            <select class="form-control" name="price-range-select" id="price-range-select">
-                <option value="">- Mức giá -</option>
-                {% for priceRange in priceRanges %}
-                <option value="{{ priceRange.id }}" {% if selected_price_range_id == priceRange.id|string %}selected{% endif %}>{{ priceRange.name }}</option>
-                {% endfor %}
-            </select>
+      <div class="col-3">
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle col-12" type="button" id="dropdown-toggle-price" data-bs-toggle="dropdown" aria-expanded="false">
+            Mức giá
+          </button>
+          <ul class="dropdown-menu col-12" id="dropdown-menu-price">
+            <li class="dropdown-item-row">
+                <a class="dropdown-item item-link-price" data-value="0">- Xóa chọn -</a>
+            </li>
+            {% for priceRange in priceRanges %}
+            <li class="dropdown-item-row">
+              <a class="dropdown-item item-link-price" data-value="{{ priceRange.id }}">{{ priceRange.name }}</a>
+            </li>
+            {% endfor %}
+          </ul>
         </div>
-        <div class="col-3">
-            <select class="form-control" name="area-range-select" id="area-range-select">
-                <option value="">- Diện tích -</option>
-                {% for areaRange in areaRanges %}
-                <option value="{{ areaRange.id }}" {% if selected_area_range_id == areaRange.id|string %}selected{% endif %}>{{ areaRange.name }}</option>
-                {% endfor %}
-            </select>
+      </div>
+      <div class="col-3">
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle col-12" type="button" id="dropdown-toggle-area" data-bs-toggle="dropdown" aria-expanded="false">
+            Diện tích
+          </button>
+          <ul class="dropdown-menu col-12" id="dropdown-menu-area">
+            <li class="dropdown-item-row">
+              <a class="dropdown-item item-link-area" data-value="0">- Xóa chọn -</a>
+            </li>
+            {% for areaRange in areaRanges %}
+            <li class="dropdown-item-row">
+              <a class="dropdown-item item-link-area" data-value="{{ areaRange.id }}">{{ areaRange.name }}</a>
+            </li>
+            {% endfor %}
+          </ul>
         </div>
-        <div class="col-3">
-          <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-          <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
-        </div>
+      </div>
+      <div class="col-3">
+        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+        <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
+      </div>
     </div>
   </form>
 
