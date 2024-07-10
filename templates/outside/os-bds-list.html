@@ -111,164 +111,168 @@ $('#keyword-province').on('input', function() {
     });
 });
 
-//--- click item Province thì gán tên Tỉnh vào Nút, update City tương ứng
-$('#dropdown-menu-province .item-link').click(function() {
-    // Lấy text và value
-    var text = $(this).text();
-    var provinceId = $(this).data('value');
+// --- click item Province thì gán tên Tỉnh vào Nút, update City tương ứng
+$('#dropdown-menu-province .item-link-province').click(function() {
+  var text = $(this).text();
+  var provinceId = $(this).data('value');
 
-    // Cập nhật text cho nút
-    $('#dropdown-toggle-province').text(text);
-
-    // Cập nhật value cho input hidden
-    $('#province-select').val(provinceId);
-
-    getCitiesByProvince(provinceId);
-})
-
-//--- xử lý Find City theo Keyword
-// Khi dropdown button được nhấn
-$('#dropdown-toggle-city').on('click', function() {
-    // Focus vào ô keyword
-    $('#keyword-city').focus();
-    // Làm trống giá trị trong ô keyword
-    $('#keyword-city').val('');
-    // Hiện toàn bộ dropdown-item
-    $('#dropdown-menu-city .dropdown-item-row').show();
+  $('#dropdown-toggle-province').text(text);
+  $('input[type=hidden][id=province-select]').val(provinceId).trigger('change');
 });
 
-//--- click item City thì gán tên City vào Nút 
-$('#dropdown-menu-city .item-link').click(function() {
-    // Lấy text và value
-    var text = $(this).text();
-    var cityId = $(this).data('value');
+// --- Xử lý khi input hidden #province-select thay đổi
+$('input[type=hidden][id=province-select]').on('change', function() {
+  var provinceId = $(this).val();
 
-    // Cập nhật text cho nút
-    $('#dropdown-toggle-city').text(text);
+  // Kiểm tra nếu provinceId = 0
+  if (provinceId === '0' || provinceId === 0) { 
+    // Reset dropdown Province
+    $('#dropdown-toggle-province').text(' Tỉnh/Thành phố ');
 
-    // Cập nhật value cho input hidden
-    $('#city-select').val(cityId);
-})
+    // Reset dropdown City
+    $('#dropdown-toggle-city').text(' Quận/Huyện ').prop('disabled', true); 
+    $('#dropdown-menu-city').empty(); // Xóa danh sách city hiện tại (nếu có)
 
-//--- Tìm Cities tương ứng Provinces
-function getCitiesByProvince(provinceId) {
-    if (provinceId) {
-        // Ajax call lấy cities
-        $.ajax({
-            url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
-            type: 'GET',
-            success: function(data) {
-                // Lấy dropdown menu của city
-                var cityDropdownMenu = $('#dropdown-menu-city'); 
-                cityDropdownMenu.empty(); // Xóa các mục hiện có
+    // Reset #city-select về 0
+    $('#city-select').val('0'); 
+  } else {
+    getCitiesByProvince(provinceId);
+  }
 
-                // Thêm input tìm kiếm
-                cityDropdownMenu.append(`
-                    <li>
-                        <div class="container">
-                            <div class="col-12">
-                                <input type="text" class="form-control col-6" id="keyword-city" placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
-                            </div>
-                        </div>
-                    </li>
-                `);
+  // Cập nhật class cho dropdown button
+  updateDropdownButtonClasses();
+});
 
-                // Thêm các mục city vào dropdown
-                $.each(data, function(index, city) {
-                    cityDropdownMenu.append(`
-                        <li class="dropdown-item-row">
-                            <a class="dropdown-item item-link-city" data-value="${city.id}">${city.name}</a>
-                        </li>
-                    `);
-                });
+// --- Sử dụng event delegation để bắt sự kiện click trên item-link-city
+$('#dropdown-menu-city').on('click', '.item-link-city', function() {
+  var text = $(this).text();
+  var cityId = $(this).data('value');
 
-                // Bật dropdown city và cập nhật nút
-                $('#dropdown-toggle-city').prop('disabled', false).text('Quận/Huyện');
+  $('#dropdown-toggle-city').text(text);
+  $('input[type=hidden][id=city-select]').val(cityId).trigger('change');
+});
 
-                // Xử lý khi click vào item city mới được thêm
-                $('.item-link-city').click(function() {
-                    var selectedCityName = $(this).text();
-                    var selectedCityId = $(this).data('value');
-                    $('#dropdown-toggle-city').text(selectedCityName);
-                    $('#city-select').val(selectedCityId); // Cập nhật giá trị vào input ẩn
-                });
+// --- Xử lý khi input hidden #city-select thay đổi
+$('input[type=hidden][id=city-select]').on('change', function() {
+  var cityId = $(this).val();
 
-                // Kiểm tra selectedCityId và cập nhật dropdown
-                var selectedCityId = "{{ selected_city_id }}";
-                if (selectedCityId && data.some(city => city.id == selectedCityId)) {
-                    // Tìm item có ID trùng với selectedCityId
-                    var selectedCity = data.find(city => city.id == selectedCityId);
-                    $('#dropdown-toggle-city').text(selectedCity.name);
-                    $('#city-select').val(selectedCityId);
-                } else {
-                    // Nếu selectedCityId không hợp lệ, gán tên item đầu tiên vào nút dropdown và cập nhật giá trị vào input ẩn
-                    if (data.length > 0) {
-                        $('#dropdown-toggle-city').text(data[0].name);
-                        $('#city-select').val(data[0].id); // Cập nhật giá trị vào input ẩn
-                    }
-                }
+  // Cập nhật class cho dropdown button
+  updateDropdownButtonClasses();
+});
 
-                // Thêm event listener cho #keyword-city sau khi AJAX hoàn thành
-                $('#keyword-city').on('input', function() {
-                    var keyword = $(this).val().toLowerCase();
-                    // Chuyển đổi keyword thành dạng không dấu và loại bỏ khoảng trắng để dễ so sánh
-                    var normalizedKeyword = keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+// Hàm cập nhật class cho dropdown button
+function updateDropdownButtonClasses() {
+  var provinceId = $('#province-select').val();
+  var cityId = $('#city-select').val();
 
-                    // Duyệt qua các dropdown-item
-                    $('#dropdown-menu-city .dropdown-item').each(function() {
-                        var itemText = $(this).text().toLowerCase();
-                        var normalizedItemText = itemText.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
-
-                        // Nếu keyword là rỗng hoặc trùng khớp với item text thì hiện item, ngược lại thì ẩn item
-                        if (normalizedKeyword === '' || normalizedItemText.includes(normalizedKeyword)) {
-                            $(this).parent().show();
-                        } else {
-                            $(this).parent().hide();
-                        }
-                    });
-                });
-            }
-        });
-    } else {
-        // Xóa dữ liệu và vô hiệu hóa dropdown city
-        $('#dropdown-menu-city').empty();
-        $('#dropdown-toggle-city').prop('disabled', true).text('Quận/Huyện'); 
-    }
+  // Kiểm tra giá trị của provinceId và cityId
+  if (provinceId && provinceId !== '0' && provinceId !== 'None' 
+      && cityId && cityId !== '0' && cityId !== 'None') {
+    // Thêm btn-secondary, bỏ btn-outline-secondary
+    $('#dropdown-toggle-province, #dropdown-toggle-city').addClass('btn-secondary').removeClass('btn-outline-secondary');
+  } else {
+    // Thêm btn-outline-secondary, bỏ btn-secondary
+    $('#dropdown-toggle-province, #dropdown-toggle-city').addClass('btn-outline-secondary').removeClass('btn-secondary');
+  }
 }
 
-//--- khi load trang, cập nhật tên Nút thành tên của Tỉnh có value từ hidden (có từ lần search trước)
+// --- Tìm Cities tương ứng Provinces
+function getCitiesByProvince(provinceId) {
+  if (provinceId) {
+    $.ajax({
+      url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+      type: 'GET',
+      success: function(data) {
+        var cityDropdownMenu = $('#dropdown-menu-city');
+        cityDropdownMenu.empty();
+
+        // Thêm input tìm kiếm
+        cityDropdownMenu.append(`
+                  <li>
+                      <div class="container">
+                          <div class="col-12">
+                              <input type="text" class="form-control col-6" id="keyword-city" placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+                          </div>
+                      </div>
+                  </li>
+              `);
+
+        $.each(data, function(index, city) {
+          cityDropdownMenu.append(`
+                      <li class="dropdown-item-row">
+                          <a class="dropdown-item item-link-city" data-value="${city.id}">${city.name}</a>
+                      </li>
+                  `);
+        });
+
+        $('#dropdown-toggle-city').prop('disabled', false).text(' Quận/Huyện ');
+
+        // --- Sau khi thêm các mục city vào dropdown
+        if (data.length > 0) {
+          // **Lấy text và value của item đầu tiên**
+          var firstCityText = data[0].name;
+          var firstCityId = data[0].id;
+
+          // **Gán giá trị cho #city-select trước**
+          $('#city-select').val(firstCityId); 
+
+          // **Bây giờ mới kiểm tra selectedCityId**
+          var selectedCityId = $('#city-select').val();
+          if (selectedCityId) { 
+            // Cập nhật text cho dropdown button 
+            $('#dropdown-toggle-city').text(firstCityText);
+            // Trigger change event (nếu cần)
+            $('#city-select').trigger('change'); 
+          }
+        }
+
+        // --- Xử lý tìm kiếm city (giữ nguyên)
+        $('#keyword-city').on('input', function() {
+          var keyword = $(this).val().toLowerCase();
+          var normalizedKeyword = keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+
+          $('#dropdown-menu-city .dropdown-item').each(function() {
+            var itemText = $(this).text().toLowerCase();
+            var normalizedItemText = itemText.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+
+            if (normalizedKeyword === '' || normalizedItemText.includes(normalizedKeyword)) {
+              $(this).parent().show();
+            } else {
+              $(this).parent().hide();
+            }
+          });
+        });
+      }
+    });
+  } else {
+    $('#dropdown-menu-city').empty();
+    $('#dropdown-toggle-city').prop('disabled', true).text(' Quận/Huyện ');
+  }
+}
+
+// --- khi load trang, cập nhật tên Nút thành tên của Tỉnh/Thành phố có value từ hidden (giữ nguyên)
 var selectedProvinceId = "{{ selected_province_id }}";
 var selectedCityId = "{{ selected_city_id }}";
 
-// Delay the execution by 1 millisecond
 setTimeout(function() {
-    // Tìm kiếm item có data-value trùng với selectedProvinceId
-    var selectedProvinceItem = $('.item-link[data-value="' + selectedProvinceId + '"]');
-
-    // Nếu tìm thấy item
+  if (selectedProvinceId) {
+    var selectedProvinceItem = $('.item-link-province[data-value="' + selectedProvinceId + '"]');
     if (selectedProvinceItem.length > 0) {
-        // Lấy tên tỉnh từ item đã chọn
-        var selectedProvinceName = selectedProvinceItem.text();
-
-        // Cập nhật tên nút
-        $('#dropdown-toggle-province').text(selectedProvinceName);
+      var selectedProvinceName = selectedProvinceItem.text();
+      $('#dropdown-toggle-province').text(selectedProvinceName);
     }
+    $('input[type=hidden][id=province-select]').val(selectedProvinceId).trigger('change');
+  }
 
-    getCitiesByProvince(selectedProvinceId);
-}, 1); // 1 millisecond delay
-
-//--- Cập nhật giá trị ban đầu khi trang được tải
-setTimeout(function() {
-  updateProvinceCitySelect();
-}, 1); // 1 millisecond delay
-
-// Hàm cập nhật giá trị của #province-select, #city-select
-function updateProvinceCitySelect() {
-    var selectedProvinceId = "{{ selected_province_id }}";
-    $('#province-select').val(selectedProvinceId);
-
-    getCitiesByProvince(selectedProvinceId);
-}
+  if (selectedCityId) {
+    var selectedCityItem = $('.item-link-city[data-value="' + selectedCityId + '"]');
+    if (selectedCityItem.length > 0) {
+      var selectedCityName = selectedCityItem.text();
+      $('#dropdown-toggle-city').text(selectedCityName);
+    }
+    $('input[type=hidden][id=city-select]').val(selectedCityId).trigger('change');
+  }
+}, 1);
 </script>
 {% endblock %}
 
@@ -282,8 +286,10 @@ function updateProvinceCitySelect() {
     </div>
   </div>
   <form action="{{ url_for('bds.os_bds_list') }}" method="POST" class="mb-3">
-    <input type="hidden" name="province-select" id="province-select" val="{{ selected_province_id }}">
-    <input type="hidden" name="city-select" id="city-select" val="{{ selected_city_id }}">
+    <input type="hidden" name="province-select" id="province-select"
+            value="{% if selected_province_id %}{{ selected_province_id }}{% else %}0{% endif %}">
+    <input type="hidden" name="city-select" id="city-select"
+            value="{{ selected_city_id }}">
     <div class="row mb-3">
         <div class="col-3">
           <div class="dropdown">
@@ -308,29 +314,32 @@ function updateProvinceCitySelect() {
           <div class="dropdown">
             <button class="btn btn-outline-secondary dropdown-toggle col-12" id="dropdown-toggle-province"
                     type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Tỉnh/Thành phố
+                Tỉnh/Thành phố
             </button>
             <ul class="dropdown-menu col-12" id="dropdown-menu-province">
-              <li>
-                <div class="container">
-                  <div class="col-12">
-                    <input type="text" class="form-control col-6" id="keyword-province"
-                            placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
-                  </div>
-                </div>
-              </li>
-              {% for province in provinces %}
-              <li class="dropdown-item-row">
-                <a class="dropdown-item item-link" data-value="{{ province.id }}">{{ province.name }}</a>
-              </li>
-              {% endfor %}
+                <li>
+                    <div class="container">
+                        <div class="col-12">
+                            <input type="text" class="form-control col-6" id="keyword-province"
+                                   placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+                        </div>
+                    </div>
+                </li>
+                <li class="dropdown-item-row">
+                    <a class="dropdown-item item-link-province" data-value="0">- Xóa chọn -</a>
+                </li>
+                {% for province in provinces %}
+                <li class="dropdown-item-row">
+                    <a class="dropdown-item item-link-province" data-value="{{ province.id }}">{{ province.name }}</a>
+                </li>
+                {% endfor %}
             </ul>
-          </div>
+        </div>
         </div>
         <div class="col-3">
           <div class="dropdown">
             <button class="btn btn-outline-secondary dropdown-toggle col-12" id="dropdown-toggle-city" 
-                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
               Quận/Huyện
             </button>
             <ul class="dropdown-menu col-12" id="dropdown-menu-city">

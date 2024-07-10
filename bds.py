@@ -369,6 +369,12 @@ def os_bds_list():
         address_text = request.form.get("address-text")
         # direction_id = request.form.get("direction-select")
 
+        # Chuyển đổi bds_province_id và bds_city_id thành số nguyên
+        if bds_province_id:
+            bds_province_id = int(bds_province_id) if bds_province_id != 'None' else 0
+        if bds_city_id:
+            bds_city_id = int(bds_city_id) if bds_city_id != 'None' else 0
+
         if bds_type_ids:
             bds_ids = (
                 db.session.query(BdsTypeRelation.bds_id)
