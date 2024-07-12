@@ -376,6 +376,20 @@ setTimeout(function() {
     $('input[type=hidden][id=area-range-select]').val(selectedAreaId).trigger('change');
   }
 }, 1);
+
+var $globalOverlay = $('#global-overlay');
+
+// Hiển thị overlay khi dropdown mở
+$('.dropdown').on('shown.bs.dropdown', function() {
+  $globalOverlay.fadeIn(200); // Fade-in trong 0.2 giây (200 milliseconds)
+  $(this).find('.dropdown-toggle').parent().parent().css('z-index', '1001');
+});
+
+// Ẩn overlay và reset z-index khi dropdown đóng
+$('.dropdown').on('hidden.bs.dropdown', function() {
+  $globalOverlay.fadeOut(200); // Fade-out trong 0.2 giây (200 milliseconds)
+  $('.dropdown .dropdown-toggle').parent().parent().css('z-index', 'auto');
+});
 </script>
 {% endblock %}
 
@@ -558,4 +572,5 @@ setTimeout(function() {
     {% endif %}
   </div>
 </div>
+<div id="global-overlay" class="global-overlay" style="display: none;"></div>
 {% endblock %}

@@ -22,8 +22,7 @@ body {
   transition: content 0.3s ease-in-out;
 }
 
-.os-bds-list-html #dropdown-menu-province,
-.os-bds-list-html #dropdown-menu-city {
+.os-bds-list-html .dropdown-menu {
   max-height: 300px;
   overflow-y: auto;
 }
@@ -35,3 +34,21 @@ body {
   background-color: #fff;
   z-index: 1;
 }
+
+/*--- global */
+
+.global-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(128, 128, 128, 0.3);
+  z-index: 1000;
+  display: none;
+}
+
+.dropdown-menu {
+  z-index: 1001; /* Đảm bảo dropdown menu nằm trên overlay */
+}
+
