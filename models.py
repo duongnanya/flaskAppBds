@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, UserMixin
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 db = SQLAlchemy()
 
@@ -377,3 +379,25 @@ class Post(db.Model):
         self.status_id = status_id
         self.create_user_id = create_user_id
         self.update_user_id = update_user_id
+
+class BdsViewCount(db.Model):
+    __tablename = "bds_view_count"
+
+    id = db.Column(db.Integer, primary_key=True)
+    bds_id = db.Column(db.Integer, nullable=False)
+    view_by_user_ip = db.Column(db.String(45), nullable=False)
+    cnt_view_today = db.Column(db.Integer, default=0)
+    last_view_today = db.Column(db.TIMESTAMP)
+    cnt_view_24 = db.Column(db.Integer, default=0)
+    last_view_24 = db.Column(db.TIMESTAMP)
+    cnt_view_7 = db.Column(db.Integer, default=0)
+    last_view_7 = db.Column(db.TIMESTAMP)
+    cnt_view_30 = db.Column(db.Integer, default=0)
+    last_view_30 = db.Column(db.TIMESTAMP)
+    create_dt = db.Column(db.TIMESTAMP, nullable=False, default=func.current_timestamp())
+    update_dt = db.Column(db.TIMESTAMP, nullable=False, default=func.current_timestamp(), onupdate=func.current_timestamp())
+    del_flg = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, bds_id, view_by_user_ip):
+        self.bds_id = bds_id
+        self.view_by_user_ip = view_by_user_ip

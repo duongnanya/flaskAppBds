@@ -34,3 +34,7 @@ class Config:
     # Message
     MSG_LOGIN_REQUIRED = "Bạn cần đăng nhập để truy cập trang này."
     MSG_FUNC_NOT_AVAILABLE_TO_AE = "Không khả dụng với Admin/Editor."
+
+    # BdsView
+    MIN_TIME_DIFF = 3
+    TOP_CNT = 12

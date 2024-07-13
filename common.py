@@ -1,11 +1,11 @@
 from flask import Blueprint, jsonify, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from models import Category, Status, db, Province, City
+from models import Bds, BdsViewCount, Category, Status, db, Province, City
 import pandas as pd
 import logging
 from datetime import datetime, timedelta
 import json
-from sqlalchemy import and_, exists
+from sqlalchemy import and_, exists, func
 from config import Config
 
 common_bp = Blueprint("common", __name__)
@@ -57,3 +57,27 @@ def get_categories():
 def get_statuses():
     statuses = Status.query.filter_by(del_flg=False).all()
     return statuses
+
+
+def get_top_bds_24():
+    now = datetime.now()
+    last_24_hours = now - timedelta(hours=24)
+
+    subquery = db.session.query(
+        BdsViewCount.bds_id,
+        func.sum(BdsViewCount.cnt_view_24).label('total_views')
+    ).filter(
+        BdsViewCount.last_view_24 >= last_24_hours
+    ).group_by(
+        BdsViewCount.bds_id
+    ).subquery()
+
+    top_bds = db.session.query(
+        Bds
+    ).join(
+        subquery, Bds.id == subquery.c.bds_id
+    ).order_by(
+        subquery.c.total_views.desc()
+    ).limit(Config.TOP_CNT).all()
+
+    return top_bds

@@ -12,9 +12,10 @@ from flask import (
     url_for,
     session,
 )
-from sqlalchemy import func
+from sqlalchemy import and_, func
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
+from common import get_top_bds_24
 from models import (
     Bds,
     BdsImage,
@@ -28,10 +29,12 @@ from models import (
     db,
     PriceRange,
     AreaRange,
+    BdsViewCount,
 )
 from config import Config
 from decorators import *
 from PIL import Image as PILImage, ImageDraw, ImageFont
+from datetime import datetime, timedelta
 
 bds_bp = Blueprint("bds", __name__)
 
@@ -128,6 +131,51 @@ def bds_detail(bds_id):
     # Lấy thông tin Province
     bds_province = Province.query.get(bds.province_id)
     is_favorite = False
+    user_ip = request.remote_addr  # Lấy địa chỉ IP người dùng
+
+    # Xử lý đếm lượt truy cập
+    now = datetime.now()
+    view_count = BdsViewCount.query.filter(
+        and_(BdsViewCount.bds_id == bds_id, BdsViewCount.view_by_user_ip == user_ip)
+    ).first()
+
+    if not view_count:
+        view_count = BdsViewCount(bds_id, user_ip)
+        db.session.add(view_count)
+    else:
+        # Kiểm tra khoảng cách thời gian giữa các lần truy cập
+        min_time_diff = timedelta(minutes=Config.MIN_TIME_DIFF)
+        if view_count.last_view_today and now - view_count.last_view_today < min_time_diff:
+            # Nếu lần truy cập này cách lần truy cập trước ít hơn 3 phút, không tăng số lượt xem
+            pass
+        else:
+            if view_count.last_view_today and view_count.last_view_today.date() == now.date():
+                view_count.cnt_view_today += 1
+            else:
+                view_count.cnt_view_today = 1
+
+            if view_count.last_view_24 and now - view_count.last_view_24 <= timedelta(hours=24):
+                view_count.cnt_view_24 += 1
+            else:
+                view_count.cnt_view_24 = 1
+
+            if view_count.last_view_7 and now - view_count.last_view_7 <= timedelta(days=7):
+                view_count.cnt_view_7 += 1
+            else:
+                view_count.cnt_view_7 = 1
+
+            if view_count.last_view_30 and now - view_count.last_view_30 <= timedelta(days=30):
+                view_count.cnt_view_30 += 1
+            else:
+                view_count.cnt_view_30 = 1
+
+            # Cập nhật thời gian truy cập cuối cùng
+            view_count.last_view_today = now
+            view_count.last_view_24 = now
+            view_count.last_view_7 = now
+            view_count.last_view_30 = now
+
+    db.session.commit()
 
     if user_is_auth():
         is_favorite = (
@@ -425,6 +473,9 @@ def os_bds_list():
     areaRanges = AreaRange.query.all()
     # directions = Direction.query.all()
 
+    # get_top_bds_24()
+    top_bds_24 = get_bds_data(get_top_bds_24())
+
     # Render the template
     return render_template(
         "outside/os-bds-list.html",
@@ -442,6 +493,7 @@ def os_bds_list():
         address=address_text,
         # directions=directions,
         # selected_direction_id=direction_id,
+        top_bds_24=top_bds_24,
     )
 
 

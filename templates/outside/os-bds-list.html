@@ -571,6 +571,55 @@ $('.dropdown').on('hidden.bs.dropdown', function() {
     <div class="col-12 mb-4">Không có BĐS phù hợp</div>
     {% endif %}
   </div>
+
+<div class="container">
+  <div class="jumbotron p-3 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-3">
+        <h3 class="display-7 fw-bold">Top xem nhiều 24h qua</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    {% if top_bds_24 %}
+    {% for bds_item in top_bds_24 %}
+    <div class="col-3 mb-4">
+      <div class="card h-100">
+        <div class="card-img-top-wrapper position-relative">
+          {% if bds_item.first_image_url %}
+          <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
+          {% else %}
+          <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
+          {% endif %}
+          {% if bds_item.remaining_images_count > 0 %}
+          <div class="position-absolute top-0 end-0 mt-3 me-4">
+            <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
+          </div>
+          {% endif %}
+          <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+            <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
+                style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
+            </i>
+          </div>
+        </div>
+        <div class="card-body">
+          <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
+            <h5 class="card-title">{{ bds_item.bds.title }}</h5>
+          </a>
+          <p class="card-text">
+            ({{ bds_item.bds_types|count }})
+            {% for bds_type in bds_item.bds_types %}
+                {{ bds_type.name }}{% if not loop.last %} / {% endif %}
+            {% endfor %}<br>
+            {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
+            {{ bds_item.bds_city.name }}, {{ bds_item.bds_province.name }}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </div>
 </div>
+
 <div id="global-overlay" class="global-overlay" style="display: none;"></div>
 {% endblock %}
