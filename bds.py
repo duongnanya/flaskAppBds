@@ -31,6 +31,7 @@ from models import (
 )
 from config import Config
 from decorators import *
+from PIL import Image as PILImage, ImageDraw, ImageFont
 
 bds_bp = Blueprint("bds", __name__)
 
@@ -269,6 +270,9 @@ def bds_add_edit():
                     os.makedirs(upload_folder)
 
                 image.save(image_path)
+
+                # Thêm watermark vào ảnh
+                add_watermark(image_path, "Mecland.vn")
 
                 img = Image(
                     filename=filename,
@@ -566,3 +570,44 @@ def check_favorite(bds_id):
         user_id=current_user.id, bds_id=bds_id, del_flg=False
     ).first()
     return jsonify({"is_favorite": bool(bds_relation)})
+
+
+def add_watermark(image_path, watermark_text):
+    base_image = PILImage.open(image_path).convert("RGBA")
+    width, height = base_image.size
+
+    # Make the image editable
+    txt = PILImage.new("RGBA", base_image.size, (255, 255, 255, 0))
+
+    # Choose a font and size
+    font = ImageFont.load_default()
+
+    draw = ImageDraw.Draw(txt)
+
+    # Calculate the original text size
+    text_bbox = draw.textbbox((0, 0), watermark_text, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+
+    # Create a new font with scaled size (20 times larger)
+    font_size = int(font.size * 20)
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except IOError:
+        font = ImageFont.load_default()
+
+    # Calculate the new text size with the updated font
+    text_bbox = draw.textbbox((0, 0), watermark_text, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+
+    # Position the watermark 50px from the top-left corner
+    x = 50
+    y = 50
+
+    # Apply the watermark
+    draw.text((x, y), watermark_text, font=font, fill=(255, 255, 255, 128))
+
+    watermarked = PILImage.alpha_composite(base_image, txt)
+    watermarked = watermarked.convert("RGB")  # Remove alpha for saving in JPEG format
+    watermarked.save(image_path)
