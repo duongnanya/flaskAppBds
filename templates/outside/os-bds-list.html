@@ -501,7 +501,7 @@ setInterval(changePlaceholder, 4000);
     <input type="hidden" name="area-range-select" id="area-range-select"
         value="{% if selected_area_range_id %}{{ selected_area_range_id }}{% else %}0{% endif %}">
 
-    <div class="row justify-content-center mt-3" id="search-frame">
+    <div class="row justify-content-center mt-3 mb-3" id="search-frame">
         <div class="col-10">
             <div class="border p-3 rounded">
                 <!-- First row: Keyword input and search button -->
@@ -622,59 +622,101 @@ setInterval(changePlaceholder, 4000);
             </div>
         </div>
     </div>
-  </form>
 
-  <div class="row">
-    {% if bds_data %}
-    {% for bds_item in bds_data %}
-    <div class="col-3 mb-4">
-      <div class="card h-100">
-        <div class="card-img-top-wrapper position-relative">
-          {% if bds_item.first_image_url %}
-          <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
-          {% else %}
-          <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
-          {% endif %}
-          {% if bds_item.remaining_images_count > 0 %}
-          <div class="position-absolute top-0 end-0 mt-3 me-4">
-            <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
+    <div class="row">
+      {% if bds_data %}
+      {% for bds_item in bds_data %}
+      <div class="col-3 mb-4">
+        <div class="card h-100">
+          <div class="card-img-top-wrapper position-relative">
+            {% if bds_item.first_image_url %}
+            <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
+            {% else %}
+            <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
+            {% endif %}
+            {% if bds_item.remaining_images_count > 0 %}
+            <div class="position-absolute top-0 end-0 mt-3 me-4">
+              <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
+            </div>
+            {% endif %}
+            <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+              <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
+                  style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
+              </i>
+            </div>
           </div>
-          {% endif %}
-          <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-            <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
-                style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
-            </i>
+          <div class="card-body">
+            <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
+              <h5 class="card-title">{{ bds_item.bds.title }}</h5>
+            </a>
+            <p class="card-text">
+              ({{ bds_item.bds_types|count }})
+              {% for bds_type in bds_item.bds_types %}
+                  {{ bds_type.name }}{% if not loop.last %} / {% endif %}
+              {% endfor %}<br>
+              {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
+              {{ bds_item.bds_city.name }}, {{ bds_item.bds_province.name }}
+            </p>
           </div>
-        </div>
-        <div class="card-body">
-          <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
-            <h5 class="card-title">{{ bds_item.bds.title }}</h5>
-          </a>
-          <p class="card-text">
-            ({{ bds_item.bds_types|count }})
-            {% for bds_type in bds_item.bds_types %}
-                {{ bds_type.name }}{% if not loop.last %} / {% endif %}
-            {% endfor %}<br>
-            {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
-            {{ bds_item.bds_city.name }}, {{ bds_item.bds_province.name }}
-          </p>
         </div>
       </div>
+      {% endfor %}
+      {% else %}
+      <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='uploads/not-found-bds.jpg') }}"
+              alt="Không có BĐS phù hợp" class="img-fluid" style="width: 25%;">
+      </div>
+      <div class="row justify-content-center">
+          <div class="col-6 col-offset-3">
+              <button class="btn btn-secondary col-12" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
+          </div>
+      </div>
+      {% endif %}
     </div>
-    {% endfor %}
-    {% else %}
-    <div class="text-center mb-4">
-      <img src="{{ url_for('static', filename='uploads/not-found-bds.jpg') }}"
-            alt="Không có BĐS phù hợp" class="img-fluid" style="width: 25%;">
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-6 col-offset-3">
-            <button class="btn btn-secondary col-12" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
-        </div>
-    </div>
-    {% endif %}
-  </div>
 
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center">
+          {% if pagination.has_prev %}
+          <li class="page-item">
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.prev_num) }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+              </a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+              </a>
+          </li>
+          {% endif %}
+          
+          {% for page_num in pagination.iter_pages() %}
+          {% if page_num %}
+          <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=page_num) }}">{{ page_num }}</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+          {% endfor %}
+          
+          {% if pagination.has_next %}
+          <li class="page-item">
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.next_num) }}" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+              </a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+              </a>
+          </li>
+          {% endif %}
+      </ul>
+    </nav>
+    
+  </form>
 </div>
 
 <div class="container">

@@ -409,7 +409,6 @@ def os_bds_list():
     bds_city_id = None
     price_range_id = None
     area_range_id = None
-    # address_text = ""
     keyword_input = ""
 
     # Handle POST request (filtering)
@@ -421,8 +420,6 @@ def os_bds_list():
         area_range_id = request.form.get("area-range-select")
         area_range_id = request.form.get("area-range-select")
         keyword_input = request.form.get("keyword-input")
-        # address_text = request.form.get("address-text")
-        # direction_id = request.form.get("direction-select")
 
         # Chuyển đổi bds_province_id và bds_city_id thành số nguyên
         if bds_province_id:
@@ -434,6 +431,7 @@ def os_bds_list():
         if area_range_id:
             area_range_id = int(area_range_id) if area_range_id != 'None' else 0
 
+        # Apply filters to the query
         if bds_type_ids:
             bds_ids = (
                 db.session.query(BdsTypeRelation.bds_id)
@@ -456,17 +454,17 @@ def os_bds_list():
         if area_range_id:
             ar = AreaRange.query.get(area_range_id)
             query = query.filter(Bds.area >= ar.area_from, Bds.area <= ar.area_to)
-        # if address_text:
-        #     query = query.filter(Bds.address.like(f"%{address_text}%"))
-        # if direction_id:
-        #     query = query.filter(Bds.direction_id == direction_id)
 
-        bds_data = get_bds_data(query)
+        # Paginate results
+        page = request.args.get('page', 1, type=int)
+        pagination = query.paginate(page=page, per_page=Config.PER_PAGE, error_out=False)
+        bds_data = get_bds_data(pagination.items)
 
-    # Fetch data for the template
+    # Fetch data for the template if no POST request
     if bds_data is None:
-        bdses = Bds.query.filter_by(published_flg=True, del_flg=False).all()
-        bds_data = get_bds_data(bdses)
+        page = request.args.get('page', 1, type=int)
+        pagination = query.paginate(page=page, per_page=Config.PER_PAGE, error_out=False)
+        bds_data = get_bds_data(pagination.items)
 
     # Fetch other data for the template
     types = Type.query.all()
@@ -474,9 +472,6 @@ def os_bds_list():
     cities = City.query.all() if bds_province_id else []
     priceRanges = PriceRange.query.all()
     areaRanges = AreaRange.query.all()
-    # directions = Direction.query.all()
-
-    # get_top_bds_24()
     top_bds_24 = get_bds_data(get_top_bds_24())
 
     # Render the template
@@ -484,7 +479,7 @@ def os_bds_list():
         "outside/os-bds-list.html",
         bds_data=bds_data,
         types=types,
-        selected_type_ids=bds_type_ids or [],  # Handle None case
+        selected_type_ids=bds_type_ids or [],
         provinces=provinces,
         selected_province_id=bds_province_id,
         cities=cities,
@@ -493,11 +488,9 @@ def os_bds_list():
         selected_price_range_id=price_range_id,
         areaRanges=areaRanges,
         selected_area_range_id=area_range_id,
-        # address=address_text,
         keyword_input=keyword_input,
-        # directions=directions,
-        # selected_direction_id=direction_id,
         top_bds_24=top_bds_24,
+        pagination=pagination  # Pass pagination object to the template
     )
 
 

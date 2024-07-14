@@ -35,6 +35,10 @@ class Config:
     MSG_LOGIN_REQUIRED = "Bạn cần đăng nhập để truy cập trang này."
     MSG_FUNC_NOT_AVAILABLE_TO_AE = "Không khả dụng với Admin/Editor."
 
-    # BdsView
+    # BdsView Count
     MIN_TIME_DIFF = 3
-    TOP_CNT = 12
+      
+    # Số BDS lấy ra và cho hiện ở mục Top xem BDS 
+    TOP_CNT = 4
+    # Số BDS ở mỗi phân trang
+    PER_PAGE = 10
