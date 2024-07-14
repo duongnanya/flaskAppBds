@@ -129,7 +129,7 @@ $('input[type=hidden][id=province-select]').on('change', function() {
   // Kiểm tra nếu provinceId = 0
   if (provinceId === '0' || provinceId === 0) { 
     // Reset dropdown Province
-    $('#dropdown-toggle-province').text(' Tỉnh/Thành phố ');
+    $('#dropdown-toggle-province').text(' Tỉnh/Thành ');
 
     // Reset dropdown City
     $('#dropdown-toggle-city').text(' Quận/Huyện ').prop('disabled', true)
@@ -328,7 +328,7 @@ function getCitiesByProvince(provinceId) {
   }
 }
 
-// --- khi load trang, cập nhật tên Nút thành tên của Tỉnh/Thành phố có value từ hidden (giữ nguyên)
+// --- khi load trang, cập nhật tên Nút thành tên của Tỉnh/Thành có value từ hidden (giữ nguyên)
 var selectedProvinceId = "{{ selected_province_id }}";
 var selectedCityId = "{{ selected_city_id }}";
 var selectedPriceId = "{{ selected_price_range_id }}";

@@ -33,25 +33,16 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="{{ url_for('dashboard') }}">★Dashboard★</a>
                     </li>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
-                        <ul class="navbar-nav">
-                            <li class="nav-item dropdown">
-                                <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Admin Only
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="{{ url_for('user.user_list') }}">★ Tài khoản</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('category.category_list') }}">★ Phân loại</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('status.status_list') }}">★ Trạng thái</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('contact.contact') }}">★ Liên hệ</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('common.import_province_city') }}">★ import Tỉnh/thành</a></li>
-                                </ul>
-                            </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Admin Only</a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{{ url_for('user.user_list') }}">★ Tài khoản</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('category.category_list') }}">★ Phân loại</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('status.status_list') }}">★ Trạng thái</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('contact.contact') }}">★ Liên hệ</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('common.import_province_city') }}">★ import Tỉnh/thành</a></li>
                         </ul>
-                    </div>
+                    </li>
                     {% endif %}
                     <li class="nav-item">
                         {% if is_admin_editor %}
@@ -64,7 +55,7 @@
                         {% if is_admin_editor %}
                         <a class="nav-link" href="{{ url_for('post.post_list') }}">★ Bài viết</a>
                         {% else %}
-                        <a class="nav-link" href="{{ url_for('post.os_post_list') }}">★ Bài viết</a>
+                        <!-- <a class="nav-link" href="{{ url_for('post.os_post_list') }}">★ Bài viết</a> -->
                         {% endif %}
                     </li>
                     {% if not is_admin_editor %}
