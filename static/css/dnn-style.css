@@ -117,3 +117,11 @@ body {
   z-index: 1001; /* Đảm bảo dropdown menu nằm trên overlay */
 }
 
+.jumbotron {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.btn-group {
+  flex-shrink: 0;
+}
