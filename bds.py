@@ -418,7 +418,6 @@ def os_bds_list():
         bds_city_id = request.form.get("city-select")
         price_range_id = request.form.get("price-range-select")
         area_range_id = request.form.get("area-range-select")
-        area_range_id = request.form.get("area-range-select")
         keyword_input = request.form.get("keyword-input")
 
         # Chuyển đổi bds_province_id và bds_city_id thành số nguyên
@@ -455,16 +454,14 @@ def os_bds_list():
             ar = AreaRange.query.get(area_range_id)
             query = query.filter(Bds.area >= ar.area_from, Bds.area <= ar.area_to)
 
-        # Paginate results
-        page = request.args.get('page', 1, type=int)
-        pagination = query.paginate(page=page, per_page=Config.PER_PAGE, error_out=False)
-        bds_data = get_bds_data(pagination.items)
+    # Paginate results
+    page = request.args.get('page', 1, type=int)
+    pagination = query.paginate(page=page, per_page=Config.PER_PAGE, error_out=False)
+    bds_data = get_bds_data(pagination.items)
 
-    # Fetch data for the template if no POST request
-    if bds_data is None:
-        page = request.args.get('page', 1, type=int)
-        pagination = query.paginate(page=page, per_page=Config.PER_PAGE, error_out=False)
-        bds_data = get_bds_data(pagination.items)
+    # Calculate start and end indices for the current page
+    start_index = (pagination.page - 1) * pagination.per_page + 1
+    end_index = min(pagination.page * pagination.per_page, pagination.total)
 
     # Fetch other data for the template
     types = Type.query.all()
@@ -490,7 +487,9 @@ def os_bds_list():
         selected_area_range_id=area_range_id,
         keyword_input=keyword_input,
         top_bds_24=top_bds_24,
-        pagination=pagination  # Pass pagination object to the template
+        pagination=pagination,  # Pass pagination object to the template
+        start_index=start_index,  # Pass start index to the template
+        end_index=end_index       # Pass end index to the template
     )
 
 
@@ -682,7 +681,7 @@ def search_bds_keyword():
 
             results.append({
                 'id': bds.id,
-                'sentence': bds.title,
+                'sentence': sentence,
                 'detailUrl': url_for('bds.bds_detail', bds_id=bds.id)
             })
     

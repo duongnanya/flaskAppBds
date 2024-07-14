@@ -93,6 +93,16 @@ $('#dropdown-toggle-province').on('shown.bs.dropdown', function() {
     $('#dropdown-menu-province .dropdown-item-row').show();
 });
 
+// Khi dropdown button được nhấn
+$('#dropdown-toggle-city').on('shown.bs.dropdown', function() {
+    // Focus vào ô keyword
+    $('#keyword-city').focus();
+    // Làm trống giá trị trong ô keyword
+    $('#keyword-city').val('');
+    // Hiện toàn bộ dropdown-item
+    $('#dropdown-menu-city .dropdown-item-row').show();
+});
+
 // Xử lý khi người dùng nhập vào ô keyword
 $('#keyword-province').on('input', function() {
     var keyword = $(this).val().toLowerCase();
@@ -266,10 +276,8 @@ function getCitiesByProvince(provinceId) {
         // Thêm input tìm kiếm
         cityDropdownMenu.append(`
                   <li>
-                      <div class="container">
-                          <div class="col-12">
-                              <input type="text" class="form-control col-6" id="keyword-city" placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
-                          </div>
+                      <div class="row col-10 offset-1">
+                          <input type="text" class="form-control col-6" id="keyword-city" placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
                       </div>
                   </li>
               `);
@@ -445,6 +453,7 @@ $('#keyword-input').on('input', function() {
 var $input = $('#keyword-input');
 var phrases = [
   "Căn hộ 2 phòng ngủ",
+  "123 Đường A",
   "Căn hộ cao cấp",
   "Biệt thự 3 tầng",
   "Bể bơi trên mái",
@@ -452,19 +461,22 @@ var phrases = [
   "Mua bán nhà chính chủ"
 ];
 var currentIndex = 0;
+var changePlaceholderInterval;
+var eraseInterval;
+var typeInterval;
 
 function animatePlaceholder(newPhrase) {
   var currentPhrase = $input.attr('placeholder');
   var i = currentPhrase.length;
 
-  var eraseInterval = setInterval(function() {
+  eraseInterval = setInterval(function() {
     if (i >= 0) {
       $input.attr('placeholder', currentPhrase.slice(0, i));
       i--;
     } else {
       clearInterval(eraseInterval);
       i = 0;
-      var typeInterval = setInterval(function() {
+      typeInterval = setInterval(function() {
         if (i <= newPhrase.length) {
           $input.attr('placeholder', newPhrase.slice(0, i));
           i++;
@@ -482,8 +494,23 @@ function changePlaceholder() {
   currentIndex = (currentIndex + 1) % phrases.length;
 }
 
+// Chạy placeholder lần đầu
 changePlaceholder();
-setInterval(changePlaceholder, 4000);
+changePlaceholderInterval = setInterval(changePlaceholder, 4000);
+
+// Sự kiện focus và blur để dừng và tiếp tục hiệu ứng
+$(window).on('focus', function() {
+  // Tab được active
+  console.log('Tab được active!');
+  changePlaceholderInterval = setInterval(changePlaceholder, 4000);
+});
+
+$(window).on('blur', function() {
+  // Tab bị inactive
+  clearInterval(changePlaceholderInterval);
+  clearInterval(eraseInterval);
+  clearInterval(typeInterval);
+});
 </script>
 {% endblock %}
 
@@ -508,7 +535,7 @@ setInterval(changePlaceholder, 4000);
                 <div class="row mb-3">
                     <!-- Input with Dropdown on Focus -->
                     <div class="col-10">
-                      <input type="text" class="form-control" id="keyword-input" name="keyword-input" placeholder="Keyword" aria-label="Search" value="{{ keyword_input }}">
+                      <input type="text" class="form-control" id="keyword-input" name="keyword-input" placeholder="Từ khóa" aria-label="Search" value="{{ keyword_input }}">
                       <div class="dropdown-menu p-1" id="keyword-dropdown" style="width: 60%;"></div>
                     </div>
                     <div class="col-2">
@@ -542,11 +569,9 @@ setInterval(changePlaceholder, 4000);
                             </button>
                             <ul class="dropdown-menu col-12" id="dropdown-menu-province">
                                 <li>
-                                    <div class="container">
-                                        <div class="col-12">
-                                            <input type="text" class="form-control col-6" id="keyword-province"
-                                                placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
-                                        </div>
+                                    <div class="row col-10 offset-1">
+                                        <input type="text" class="form-control col-6" id="keyword-province"
+                                            placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
                                     </div>
                                 </li>
                                 <li class="dropdown-item-row">
@@ -568,11 +593,9 @@ setInterval(changePlaceholder, 4000);
                             </button>
                             <ul class="dropdown-menu col-12" id="dropdown-menu-city">
                                 <li>
-                                    <div class="container">
-                                        <div class="col-12">
-                                            <input type="text" class="form-control col-6" id="keyword-city" 
-                                                placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
-                                        </div>
+                                    <div class="row col-10 offset-1">
+                                        <input type="text" class="form-control col-6" id="keyword-city" 
+                                            placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
                                     </div>
                                 </li>
                                 {% for city in cities %}
@@ -623,99 +646,161 @@ setInterval(changePlaceholder, 4000);
         </div>
     </div>
 
-    <div class="row">
-      {% if bds_data %}
-      {% for bds_item in bds_data %}
-      <div class="col-3 mb-4">
-        <div class="card h-100">
-          <div class="card-img-top-wrapper position-relative">
-            {% if bds_item.first_image_url %}
-            <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
-            {% else %}
-            <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
-            {% endif %}
-            {% if bds_item.remaining_images_count > 0 %}
-            <div class="position-absolute top-0 end-0 mt-3 me-4">
-              <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
-            </div>
-            {% endif %}
-            <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-              <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
-                  style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
-              </i>
-            </div>
-          </div>
-          <div class="card-body">
-            <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
-              <h5 class="card-title">{{ bds_item.bds.title }}</h5>
-            </a>
-            <p class="card-text">
-              ({{ bds_item.bds_types|count }})
-              {% for bds_type in bds_item.bds_types %}
-                  {{ bds_type.name }}{% if not loop.last %} / {% endif %}
-              {% endfor %}<br>
-              {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
-              {{ bds_item.bds_city.name }}, {{ bds_item.bds_province.name }}
-            </p>
+    <div class="row justify-content-center mt-3 mb-3">
+      <div class="col-7">
+        <p>Hiển thị {{ start_index }}-{{ end_index }} (trong {{ pagination.total }} kết quả)</p>
+        {% if bds_data %}
+        {% for bds_item in bds_data %}
+        <div class="col-12 mb-4">
+          <div class="card h-100 property-listing">
+              <div class="property-image card-img-top-wrapper position-relative">
+                  {% if bds_item.first_image_url %}
+                  <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
+                  {% else %}
+                  <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
+                  {% endif %}
+                  {% if bds_item.remaining_images_count > 0 %}
+                  <div class="position-absolute top-0 end-0 mt-3 me-4">
+                      <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
+                  </div>
+                  {% endif %}
+                  <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+                      <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
+                          style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
+                      </i>
+                  </div>
+              </div>
+              <div class="property-details card-body">
+                  <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
+                      <h5 class="card-title">{{ bds_item.bds.title }}</h5>
+                  </a>
+                  <p class="card-text">
+                      Loại:
+                      {% for bds_type in bds_item.bds_types %}
+                          {{ bds_type.name }}{% if not loop.last %} / {% endif %}
+                      {% endfor %}<br>
+                      <i class="bi bi-credit-card-2-back"></i><span class="price"> {{ bds_item.price_to }}</span>   
+                      <i class="bi bi-aspect-ratio"></i><span class="area"> {{ bds_item.bds.area }} m²</span>   
+                      <i class="bi bi-geo-alt"></i> {{ bds_item.bds_city.name.replace('Huyện', 'H.').replace('Thị xã', 'Tx.').replace('Quận', 'Q.').replace('Thành phố', 'Tp.') }},
+                      {{ bds_item.bds_province.name.replace('Thành phố', 'Tp.') }}
+                  </p>
+              </div>
           </div>
         </div>
-      </div>
-      {% endfor %}
-      {% else %}
-      <div class="text-center mb-4">
-        <img src="{{ url_for('static', filename='uploads/not-found-bds.jpg') }}"
-              alt="Không có BĐS phù hợp" class="img-fluid" style="width: 25%;">
-      </div>
-      <div class="row justify-content-center">
-          <div class="col-6 col-offset-3">
-              <button class="btn btn-secondary col-12" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
+        {% endfor %}
+
+        <nav aria-label="Page navigation example">
+          <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=1) }}" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.prev_num) }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+              </a>
+            </li>
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+              {% if page_num == pagination.page %}
+              <span class="page-link">{{ page_num }}</span>
+              {% else %}
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=page_num) }}">{{ page_num }}</a>
+              {% endif %}
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.next_num) }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.pages) }}" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+              </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+
+        {% else %}
+        <div class="text-center mb-4">
+          <img src="{{ url_for('static', filename='uploads/not-found-bds.jpg') }}"
+                alt="Không có BĐS phù hợp" class="img-fluid" style="width: 25%;">
+          <div class="row justify-content-center col-4 offset-4">
+              <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
           </div>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
+      <div class="col-3">
+        <div class="sticky-sidebar">
+            <p>Tin VIP (data cứng)</p>
+            <div class="mb-4">
+              <div class="card h-100 property-listing">
+                <div class="card-img-top-wrapper position-relative">
+                  <img src="/static/uploads/79_Hoa_Bang_Cau_Giay_Ha_Noi_5.jpg" class="card-img-top" alt="Căn hộ 2 phòng ngủ, view đẹp">
+                  <div class="position-absolute top-0 start-0 mt-3 ms-4">
+                    <img src="static/uploads/vip-flag.png" style="width: 15%">
+                  </div>
+                  <div class="position-absolute top-0 end-0 mt-3 me-4">
+                    <span class="badge bg-primary">+4</span>
+                  </div>
+                  <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+                    <i class="bi bi-heart-fill bds-favorite text-danger" style="font-size: 1.5rem;" data-bds-id="1">
+                    </i>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <a href="/bds_detail/1">
+                    <h5 class="card-title">Căn hộ 2 phòng ngủ, view đẹp</h5>
+                  </a>
+                  <p class="card-text">
+                    Căn hộ chung cư
+                    <br>
+                    20 triệu / 10.0 m²<br>
+                    Tp. Long Xuyên, 
+                      An Giang
+                  </p>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
     </div>
 
-    <nav aria-label="Page navigation example">
-      <ul class="pagination justify-content-center">
-          {% if pagination.has_prev %}
-          <li class="page-item">
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.prev_num) }}" aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
-              </a>
-          </li>
-          {% else %}
-          <li class="page-item disabled">
-              <a class="page-link" href="#" aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
-              </a>
-          </li>
-          {% endif %}
-          
-          {% for page_num in pagination.iter_pages() %}
-          {% if page_num %}
-          <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=page_num) }}">{{ page_num }}</a>
-          </li>
-          {% else %}
-          <li class="page-item disabled"><span class="page-link">…</span></li>
-          {% endif %}
-          {% endfor %}
-          
-          {% if pagination.has_next %}
-          <li class="page-item">
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.next_num) }}" aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-              </a>
-          </li>
-          {% else %}
-          <li class="page-item disabled">
-              <a class="page-link" href="#" aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-              </a>
-          </li>
-          {% endif %}
-      </ul>
-    </nav>
-    
   </form>
 </div>
 
@@ -730,7 +815,7 @@ setInterval(changePlaceholder, 4000);
     {% if top_bds_24 %}
     {% for bds_item in top_bds_24 %}
     <div class="col-3 mb-4">
-      <div class="card h-100">
+      <div class="card h-100 property-listing">
         <div class="card-img-top-wrapper position-relative">
           {% if bds_item.first_image_url %}
           <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
@@ -753,12 +838,12 @@ setInterval(changePlaceholder, 4000);
             <h5 class="card-title">{{ bds_item.bds.title }}</h5>
           </a>
           <p class="card-text">
-            ({{ bds_item.bds_types|count }})
             {% for bds_type in bds_item.bds_types %}
                 {{ bds_type.name }}{% if not loop.last %} / {% endif %}
             {% endfor %}<br>
             {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
-            {{ bds_item.bds_city.name }}, {{ bds_item.bds_province.name }}
+            {{ bds_item.bds_city.name.replace('Huyện', 'H.').replace('Thị xã', 'Tx.').replace('Quận', 'Q.').replace('Thành phố', 'Tp.') }}, 
+              {{ bds_item.bds_province.name.replace('Thành phố', 'Tp.') }}
           </p>
         </div>
       </div>
