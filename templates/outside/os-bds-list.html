@@ -84,7 +84,7 @@ $checkboxes.on('change', function() {
 
 //--- xử lý Find Tỉnh thành theo Keyword
 // Khi dropdown button được nhấn
-$('#dropdown-toggle-province').on('click', function() {
+$('#dropdown-toggle-province').on('shown.bs.dropdown', function() {
     // Focus vào ô keyword
     $('#keyword-province').focus();
     // Làm trống giá trị trong ô keyword
@@ -390,6 +390,100 @@ $('.dropdown').on('hidden.bs.dropdown', function() {
   $globalOverlay.fadeOut(200); // Fade-out trong 0.2 giây (200 milliseconds)
   $('.dropdown .dropdown-toggle').parent().parent().css('z-index', 'auto');
 });
+
+// --- hiện các gợi ý bds liên quan đến keyword
+$('#keyword-input').on('focus', function() {
+    if ($(this).val().trim() !== '') {
+        // Kiểm tra số lượng item trong dropdown trước khi hiển thị
+        if ($('#keyword-dropdown').children().length > 0) {
+            $('#keyword-dropdown').addClass('show');
+        }
+    }
+});
+
+$('#keyword-input').on('blur', function() {
+    setTimeout(function() {
+        $('#keyword-dropdown').removeClass('show');
+    }, 200); // Delay to allow click on dropdown items
+});
+
+$('#keyword-input').on('input', function() {
+    var keyword = $(this).val().trim();
+    if (keyword === '') {
+        $('#keyword-dropdown').removeClass('show');
+    } else {
+        $.ajax({
+            url: '/search_bds_keyword', // Đường dẫn đến endpoint xử lý tìm kiếm
+            method: 'GET',
+            data: { keyword: keyword },
+            success: function(response) {
+                var dropdownContent = '';
+                response.forEach(function(item) {
+                    var highlightedText = item.sentence.replace(new RegExp(keyword, 'gi'), function(match) {
+                        return '<span class="keyword-bold">' + match + '</span>';
+                    });
+                    dropdownContent += '<li class="list-group-item p-2" data-id="' + item.id + '">' +
+                        '<a href="' + item.detailUrl + '">' + highlightedText + '</a>' +
+                        '</li>';
+                });
+
+                // Cập nhật nội dung dropdown
+                $('#keyword-dropdown').html(dropdownContent);
+
+                // Kiểm tra số lượng item trong dropdown trước khi hiển thị
+                if (response.length > 0) {
+                    $('#keyword-dropdown').addClass('show');
+                } else {
+                    $('#keyword-dropdown').removeClass('show');
+                }
+            }
+        });
+    }
+});
+
+// --- thay thế Placeholder bằng hiệu ứng xóa chữ cũ, hiện chữ mới
+var $input = $('#keyword-input');
+var phrases = [
+  "Căn hộ 2 phòng ngủ",
+  "Căn hộ cao cấp",
+  "Biệt thự 3 tầng",
+  "Bể bơi trên mái",
+  "Văn phòng tiện nghi",
+  "Mua bán nhà chính chủ"
+];
+var currentIndex = 0;
+
+function animatePlaceholder(newPhrase) {
+  var currentPhrase = $input.attr('placeholder');
+  var i = currentPhrase.length;
+
+  var eraseInterval = setInterval(function() {
+    if (i >= 0) {
+      $input.attr('placeholder', currentPhrase.slice(0, i));
+      i--;
+    } else {
+      clearInterval(eraseInterval);
+      i = 0;
+      var typeInterval = setInterval(function() {
+        if (i <= newPhrase.length) {
+          $input.attr('placeholder', newPhrase.slice(0, i));
+          i++;
+        } else {
+          clearInterval(typeInterval);
+        }
+      }, 1000 / newPhrase.length);
+    }
+  }, 500 / currentPhrase.length); // Giảm thời gian giữa mỗi lần xóa
+}
+
+function changePlaceholder() {
+  var newPhrase = phrases[currentIndex];
+  animatePlaceholder(newPhrase);
+  currentIndex = (currentIndex + 1) % phrases.length;
+}
+
+changePlaceholder();
+setInterval(changePlaceholder, 4000);
 </script>
 {% endblock %}
 
@@ -397,135 +491,136 @@ $('.dropdown').on('hidden.bs.dropdown', function() {
 
 {% block content %}
 <div class="container os-bds-list-html">
-  <div class="row">
-    <div class="col-12">
-      <h1>Danh sách Bds</h1>
-    </div>
-  </div>
   <form action="{{ url_for('bds.os_bds_list') }}" method="POST" class="mb-3">
     <input type="hidden" name="province-select" id="province-select"
-            value="{% if selected_province_id %}{{ selected_province_id }}{% else %}0{% endif %}">
+        value="{% if selected_province_id %}{{ selected_province_id }}{% else %}0{% endif %}">
     <input type="hidden" name="city-select" id="city-select"
-            value="{{ selected_city_id }}">
+        value="{{ selected_city_id }}">
     <input type="hidden" name="price-range-select" id="price-range-select"
-            value="{% if selected_price_range_id %}{{ selected_price_range_id }}{% else %}0{% endif %}">
+        value="{% if selected_price_range_id %}{{ selected_price_range_id }}{% else %}0{% endif %}">
     <input type="hidden" name="area-range-select" id="area-range-select"
-            value="{% if selected_area_range_id %}{{ selected_area_range_id }}{% else %}0{% endif %}">
-    <div class="row mb-3">
-        <div class="col-3">
-          <div class="dropdown">
-              <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                Loại BĐS
-              </button>
-              <div class="dropdown-menu p-1 col-12">
-                  <p>(Có thể chọn nhiều)</p>
-                  <ul class="list-group">
-                    {% for type in types %}
-                    <li class="list-group-item p-2">
-                        <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}"
-                        {% if type.id|string in selected_type_ids %}checked{% endif %}>
-                        <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
-                    </li>
-                    {% endfor %}
-                </ul>
-              </div>
-          </div>
-        </div>
-        <div class="col-3">
-          <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle col-12" id="dropdown-toggle-province"
-                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Tỉnh/Thành phố
-            </button>
-            <ul class="dropdown-menu col-12" id="dropdown-menu-province">
-                <li>
-                    <div class="container">
-                        <div class="col-12">
-                            <input type="text" class="form-control col-6" id="keyword-province"
-                                   placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+        value="{% if selected_area_range_id %}{{ selected_area_range_id }}{% else %}0{% endif %}">
+
+    <div class="row justify-content-center mt-3" id="search-frame">
+        <div class="col-10">
+            <div class="border p-3 rounded">
+                <!-- First row: Keyword input and search button -->
+                <div class="row mb-3">
+                    <!-- Input with Dropdown on Focus -->
+                    <div class="col-10">
+                      <input type="text" class="form-control" id="keyword-input" name="keyword-input" placeholder="Keyword" aria-label="Search" value="{{ keyword_input }}">
+                      <div class="dropdown-menu p-1" id="keyword-dropdown" style="width: 60%;"></div>
+                    </div>
+                    <div class="col-2">
+                        <button class="btn btn-primary col-12" type="submit">Tìm kiếm</button>
+                    </div>
+                </div>
+
+                <!-- Second row: Other search criteria -->
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                Loại BĐS
+                            </button>
+                            <div class="dropdown-menu p-1" style="width: max-content;">
+                                {% for type in types %}
+                                <li class="list-group-item p-2">
+                                    <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}"
+                                        {% if type.id|string in selected_type_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
+                                </li>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
-                </li>
-                <li class="dropdown-item-row">
-                    <a class="dropdown-item item-link-province" data-value="0">- Xóa chọn -</a>
-                </li>
-                {% for province in provinces %}
-                <li class="dropdown-item-row">
-                    <a class="dropdown-item item-link-province" data-value="{{ province.id }}">{{ province.name }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        </div>
-        <div class="col-3">
-          <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle col-12" id="dropdown-toggle-city" 
-                    type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
-              Quận/Huyện
-            </button>
-            <ul class="dropdown-menu col-12" id="dropdown-menu-city">
-              <li>
-                <div class="container">
-                  <div class="col-12">
-                    <input type="text" class="form-control col-6" id="keyword-city" 
-                           placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
-                  </div>
+                    <div class="col">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle col-12" id="dropdown-toggle-province"
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Tỉnh/Thành
+                            </button>
+                            <ul class="dropdown-menu col-12" id="dropdown-menu-province">
+                                <li>
+                                    <div class="container">
+                                        <div class="col-12">
+                                            <input type="text" class="form-control col-6" id="keyword-province"
+                                                placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="dropdown-item-row">
+                                    <a class="dropdown-item item-link-province" data-value="0">- Xóa chọn -</a>
+                                </li>
+                                {% for province in provinces %}
+                                <li class="dropdown-item-row">
+                                    <a class="dropdown-item item-link-province" data-value="{{ province.id }}">{{ province.name }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle col-12" id="dropdown-toggle-city" 
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                Quận/Huyện
+                            </button>
+                            <ul class="dropdown-menu col-12" id="dropdown-menu-city">
+                                <li>
+                                    <div class="container">
+                                        <div class="col-12">
+                                            <input type="text" class="form-control col-6" id="keyword-city" 
+                                                placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+                                        </div>
+                                    </div>
+                                </li>
+                                {% for city in cities %}
+                                <li class="dropdown-item-row">
+                                    <a class="dropdown-item item-link-city" data-value="{{ city.id }}">{{ city.name }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <input type="hidden" name="city-select" id="city-select" value="{{ selected_city_id }}"> 
+                    </div>
+                    <div class="col">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle col-12" type="button" id="dropdown-toggle-price" data-bs-toggle="dropdown" aria-expanded="false">
+                                Mức giá
+                            </button>
+                            <ul class="dropdown-menu col-12" id="dropdown-menu-price">
+                                <li class="dropdown-item-row">
+                                    <a class="dropdown-item item-link-price" data-value="0">- Xóa chọn -</a>
+                                </li>
+                                {% for priceRange in priceRanges %}
+                                <li class="dropdown-item-row">
+                                    <a class="dropdown-item item-link-price" data-value="{{ priceRange.id }}">{{ priceRange.name }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle col-12" type="button" id="dropdown-toggle-area" data-bs-toggle="dropdown" aria-expanded="false">
+                                Diện tích
+                            </button>
+                            <ul class="dropdown-menu col-12" id="dropdown-menu-area">
+                                <li class="dropdown-item-row">
+                                    <a class="dropdown-item item-link-area" data-value="0">- Xóa chọn -</a>
+                                </li>
+                                {% for areaRange in areaRanges %}
+                                <li class="dropdown-item-row">
+                                    <a class="dropdown-item item-link-area" data-value="{{ areaRange.id }}">{{ areaRange.name }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-              </li>
-              {% for city in cities %}
-              <li class="dropdown-item-row">
-                <a class="dropdown-item item-link-city" data-value="{{ city.id }}">{{ city.name }}</a>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-          <input type="hidden" name="city-select" id="city-select" value="{{ selected_city_id }}"> 
-        </div>
-        <div class="col-3">
-            <div class="input-group">
-              <input type="text" class="form-control" name="address-text" placeholder="Tên Đường/phố" aria-label="Search" value="{{ address }}">
             </div>
         </div>
-    </div>
-    <div class="row mb-3">
-      <div class="col-3">
-        <div class="dropdown">
-          <button class="btn btn-outline-secondary dropdown-toggle col-12" type="button" id="dropdown-toggle-price" data-bs-toggle="dropdown" aria-expanded="false">
-            Mức giá
-          </button>
-          <ul class="dropdown-menu col-12" id="dropdown-menu-price">
-            <li class="dropdown-item-row">
-                <a class="dropdown-item item-link-price" data-value="0">- Xóa chọn -</a>
-            </li>
-            {% for priceRange in priceRanges %}
-            <li class="dropdown-item-row">
-              <a class="dropdown-item item-link-price" data-value="{{ priceRange.id }}">{{ priceRange.name }}</a>
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      <div class="col-3">
-        <div class="dropdown">
-          <button class="btn btn-outline-secondary dropdown-toggle col-12" type="button" id="dropdown-toggle-area" data-bs-toggle="dropdown" aria-expanded="false">
-            Diện tích
-          </button>
-          <ul class="dropdown-menu col-12" id="dropdown-menu-area">
-            <li class="dropdown-item-row">
-              <a class="dropdown-item item-link-area" data-value="0">- Xóa chọn -</a>
-            </li>
-            {% for areaRange in areaRanges %}
-            <li class="dropdown-item-row">
-              <a class="dropdown-item item-link-area" data-value="{{ areaRange.id }}">{{ areaRange.name }}</a>
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      <div class="col-3">
-        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-        <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
-      </div>
     </div>
   </form>
 
@@ -568,9 +663,19 @@ $('.dropdown').on('hidden.bs.dropdown', function() {
     </div>
     {% endfor %}
     {% else %}
-    <div class="col-12 mb-4">Không có BĐS phù hợp</div>
+    <div class="text-center mb-4">
+      <img src="{{ url_for('static', filename='uploads/not-found-bds.jpg') }}"
+            alt="Không có BĐS phù hợp" class="img-fluid" style="width: 25%;">
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-6 col-offset-3">
+            <button class="btn btn-secondary col-12" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
+        </div>
+    </div>
     {% endif %}
   </div>
+
+</div>
 
 <div class="container">
   <div class="jumbotron p-3 mb-4 bg-light rounded-3">

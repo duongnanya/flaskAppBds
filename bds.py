@@ -409,7 +409,8 @@ def os_bds_list():
     bds_city_id = None
     price_range_id = None
     area_range_id = None
-    address_text = ""
+    # address_text = ""
+    keyword_input = ""
 
     # Handle POST request (filtering)
     if request.method == "POST":
@@ -418,7 +419,9 @@ def os_bds_list():
         bds_city_id = request.form.get("city-select")
         price_range_id = request.form.get("price-range-select")
         area_range_id = request.form.get("area-range-select")
-        address_text = request.form.get("address-text")
+        area_range_id = request.form.get("area-range-select")
+        keyword_input = request.form.get("keyword-input")
+        # address_text = request.form.get("address-text")
         # direction_id = request.form.get("direction-select")
 
         # Chuyển đổi bds_province_id và bds_city_id thành số nguyên
@@ -453,8 +456,8 @@ def os_bds_list():
         if area_range_id:
             ar = AreaRange.query.get(area_range_id)
             query = query.filter(Bds.area >= ar.area_from, Bds.area <= ar.area_to)
-        if address_text:
-            query = query.filter(Bds.address.like(f"%{address_text}%"))
+        # if address_text:
+        #     query = query.filter(Bds.address.like(f"%{address_text}%"))
         # if direction_id:
         #     query = query.filter(Bds.direction_id == direction_id)
 
@@ -490,7 +493,8 @@ def os_bds_list():
         selected_price_range_id=price_range_id,
         areaRanges=areaRanges,
         selected_area_range_id=area_range_id,
-        address=address_text,
+        # address=address_text,
+        keyword_input=keyword_input,
         # directions=directions,
         # selected_direction_id=direction_id,
         top_bds_24=top_bds_24,
@@ -663,3 +667,30 @@ def add_watermark(image_path, watermark_text):
     watermarked = PILImage.alpha_composite(base_image, txt)
     watermarked = watermarked.convert("RGB")  # Remove alpha for saving in JPEG format
     watermarked.save(image_path)
+
+
+@bds_bp.route('/search_bds_keyword', methods=['GET'])
+def search_bds_keyword():
+    keyword = request.args.get('keyword', '').lower()
+    results = []
+
+    # Truy vấn cơ sở dữ liệu để lấy danh sách các bất động sản
+    bds_list = Bds.query.filter_by(del_flg=False).all()
+
+    for bds in bds_list:
+        if keyword in bds.title.lower() or keyword in bds.content.lower() or keyword in bds.address.lower():
+            # Xác định câu chứa từ khóa
+            if keyword in bds.title.lower():
+                sentence = bds.title
+            elif keyword in bds.content.lower():
+                sentence = bds.content
+            else:
+                sentence = bds.address
+
+            results.append({
+                'id': bds.id,
+                'sentence': bds.title,
+                'detailUrl': url_for('bds.bds_detail', bds_id=bds.id)
+            })
+    
+    return jsonify(results)
