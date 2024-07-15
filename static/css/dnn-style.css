@@ -233,3 +233,38 @@ body {
     position: static; /* Tắt sticky trên thiết bị di động */
   }
 }
+
+
+/*--- os-bds-detail-html */
+
+.os-bds-detail-html .main-image {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.os-bds-detail-html .image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 7px; /* Giảm khoảng cách giữa các ảnh trong lưới */
+  height: 100%;
+}
+.os-bds-detail-html .image-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.os-bds-detail-html .image-grid .img-3 {
+  border-top-right-radius: 10px;
+}
+.os-bds-detail-html .image-grid .img-5 img {
+  border-bottom-right-radius: 10px;
+}
+.os-bds-detail-html .col-6 {
+  padding-right: 3px; /* Giảm khoảng cách giữa ảnh 1 và các ảnh khác */
+}
+.os-bds-detail-html .col-6 + .col-6 {
+  padding-left: 4px; /* Giảm khoảng cách giữa ảnh 1 và các ảnh khác */
+}

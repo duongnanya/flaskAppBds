@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 
 {% block dnnScript %}
-<script>
+<script src="https://unpkg.com/gijgo@1.9.14/js/gijgo.min.js" type="text/javascript"></script>
+<link href="https://unpkg.com/gijgo@1.9.14/css/gijgo.min.css" rel="stylesheet" type="text/css"/><script>
 
 //--- Click Heart để lưu/quan tâm
 // Kiểm tra trạng thái ban đầu của icon heart/heart-fill
@@ -54,50 +55,81 @@ function checkFavoriteStatus(bdsId, $icon) {
     }
   });
 };
+
+// --- setup Datepicker
+var tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+
+$('#datepicker').datepicker({
+  uiLibrary: 'bootstrap5',
+  format: 'mm/dd/yyyy',
+  value:
+    tomorrow.getMonth() +
+    1 +
+    '/' +
+    tomorrow.getDate() +
+    '/' +
+    tomorrow.getFullYear(),
+});
+
+const time_range = [];
+for (let hour = 6; hour <= 22; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+        time_range.push(
+            `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+        );
+    }
+}
+
+// Thêm các tùy chọn vào dropdown
+const timepicker = document.getElementById('timepicker');
+time_range.forEach(time => {
+    const option = document.createElement('option');
+    option.value = time;
+    option.textContent = time;
+    timepicker.appendChild(option);
+});
+
+// Đặt giá trị mặc định là 09:00
+timepicker.value = "09:00";
 </script>
 {% endblock %}
 
 {% block title %}{{ bds.title }}{% endblock %}
 
 {% block content %}
-<div class="container os-bds-detail-html my-5">
-  <div class="row">
-    <div class="col-8">
-      <div class="col-12">
-        <div id="bds-images-carousel" class="carousel slide mb-2" data-ride="carousel">
-          <div class="carousel-inner">
-            {% for bds_image in bds_images %}
-            {% set image = bds_image.image %}
-            <div class="carousel-item {% if loop.first %}active{% endif %}">
-                <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="d-block w-100" alt="{{ image.filename }}">
-            </div>
-            {% endfor %}
-          </div>
-          {% if bds_images|length > 1 %}
-          <button class="carousel-control-prev" type="button" data-bs-target="#bds-images-carousel" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Previous</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#bds-images-carousel" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Next</span>
-          </button>
-          {% endif %}
+<div class="container os-bds-detail-html">
+  <div class="row justify-content-center mt-3 mb-5 col-10 offset-1" id="img-grid">
 
-          <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-              <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
-                 style="font-size: 1.5rem;" data-bds-id="{{ bds.id }}">
-              </i>
-          </div>
-        </div>
-        <div class="row">
-          {% for bds_image in bds_images %}
-          <div class="col-3 mb-3">
-            <img src="{{ url_for('static', filename='uploads/' + bds_image.image.filename) }}" class="img-thumbnail" alt="{{ bds_image.image.filename }}">
-          </div>
-          {% endfor %}
-        </div>
+    <div class="col-6">
+      <div class="position-relative h-100">
+          <img src="{{ url_for('static', filename='uploads/' + bds_images[0].image.filename) if bds_images|length > 0 else 'https://via.placeholder.com/800x600' }}"
+               class="img-fluid main-image" alt="Main" />
       </div>
+    </div>
+    <div class="col-6">
+        <div class="image-grid h-100">
+            <img src="{{ url_for('static', filename='uploads/' + bds_images[1].image.filename) if bds_images|length > 1 else 'https://via.placeholder.com/400x300' }}"
+                alt="Image 2" class="img-2" />
+            <img src="{{ url_for('static', filename='uploads/' + bds_images[2].image.filename) if bds_images|length > 2 else 'https://via.placeholder.com/400x300' }}"
+                alt="Image 3" class="img-3" />
+            <img src="{{ url_for('static', filename='uploads/' + bds_images[3].image.filename) if bds_images|length > 3 else 'https://via.placeholder.com/400x300' }}"
+                alt="Image 4" class="img-4" />
+            <div class="see-more position-relative img-5">
+                <img src="{{ url_for('static', filename='uploads/' + bds_images[4].image.filename) if bds_images|length > 4 else 'https://via.placeholder.com/400x300' }}"
+                    alt="Image 5" />
+                <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+                    <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
+                      style="font-size: 1.5rem;" data-bds-id="{{ bds.id }}">
+                    </i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  </div>
+  <div class="row justify-content-center mt-3 mb-3 col-10 offset-1">
+    <div class="col-8">
       <div class="col-12 col-12">
           <h3 class="mb-3">{{ bds.title }}</h3>
           <p class="mb-2"><strong>Loại BĐS:</strong>
@@ -110,13 +142,62 @@ function checkFavoriteStatus(bdsId, $icon) {
           <p class="mb-2"><strong>Giá:</strong> {{ price_from }} - {{ price_to }}</p>
           <p class="mb-2"><strong>Diện tích:</strong> {{ bds.area }} m²</p>
           <p class="mb-2"><strong>Tỉnh/Thành phố:</strong> {{ bds_province.name }} - {{ bds_city.name }}</p>
-          <!-- <p class="mb-2"><strong>Hướng:</strong> {{ bds.direction.name }}</p> -->
+          
+          <br><br>
+          <h3 class="mb-3">Thông tin chi tiết</h3>
           <p class="mb-3">{{ bds.content }}</p>
       </div>
     </div>
-    <div class="col-4 col-4">
-      <img src="{{ url_for('static', filename='uploads/LAT-bds.jpg') }}" 
-      class=""  alt="LAT" style="width: -webkit-fill-available;">
+    <div class="col-4">
+      <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              Hẹn lịch xem
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+            <div class="accordion-body d-flex flex-column align-items-center">
+              <div class="input-group mx-auto">
+                <input id="datepicker" class="form-control" />
+              </div>
+            
+              <div class="input-group mb-3 mx-auto">
+                  <select id="timepicker" class="form-control">
+                      <option value="">- Chọn giờ -</option>
+                  </select>
+              </div>
+              
+              <button type="button" class="btn btn-primary">Đặt</button>
+              <p class="mt-2 text-center">
+                  <em>* Bạn sẽ được chuyển đến trang Liên hệ</em>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" >
+              Đặt câu hỏi
+            </button>
+          </h2>
+          <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample" >
+            <div class="accordion-body d-flex flex-column align-items-center">
+              <div class="mb-3" style="width: 100%">
+                <textarea class="form-control" rows="5" placeholder="Có chính chủ không? Đầy đủ sổ đỏ không?" ></textarea>
+              </div>
+              <div>
+                <button type="button" class="btn btn-primary">Gửi</button>
+              </div>
+              <p class="mt-2 text-center">
+                <em>* Bạn sẽ được chuyển đến trang Liên hệ</em>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
