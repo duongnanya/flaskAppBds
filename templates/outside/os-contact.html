@@ -219,25 +219,34 @@ updateButtonText();
 //--- xử lý Yêu cầu tìm kiếm (được gửi từ os-bds-list.html)
 setTimeout(function() {
     // Lấy các giá trị từ biến Jinja2
-    var isFromBds = "{{ is_from_bds }}"
-    if (isFromBds) {
-        var selectedTypeIds = "{{ type_ids|safe }}";
-        var selectedProvinceId = "{{ selected_province_id }}";
-        var selectedCityId = "{{ selected_city_id }}";
-        var address = "{{ address }}";
-        var selectedPriceRangeId = "{{ selected_price_range_id }}";
-        var selectedAreaRangeId = "{{ selected_area_range_id }}";
-        // var selectedDirectionId = "{{ selected_direction_id }}";
+    var isFromBdsDetail = "{{ is_from_bds_detail }}";
+    if (isFromBdsDetail === "True") {
+        // Check the btnradioA1 radio button
+        $('input[id=btnradioA1]').attr('checked', 'checked');
 
-        // Cập nhật các trường trong Modal
-        updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId);
-        updateButtonText();
-        $('#exampleModal').modal('show');
+        // Set the subject value
+        $('#subject').val('Hỏi về: ' + "{{ title }}");
+    } else {
+        var isFromBdsList = "{{ is_from_bds_list }}";
+        if (isFromBdsList === "True") {
+            var selectedTypeIds = "{{ type_ids|safe }}";
+            var selectedProvinceId = "{{ selected_province_id }}";
+            var selectedCityId = "{{ selected_city_id }}";
+            var address = "{{ address }}";
+            var selectedPriceRangeId = "{{ selected_price_range_id }}";
+            var selectedAreaRangeId = "{{ selected_area_range_id }}";
+            // var selectedDirectionId = "{{ selected_direction_id }}";
 
-        // Check the btnradioA2 radio button
-        $('input[id=btnradioA2]').attr('checked', 'checked');
+            // Cập nhật các trường trong Modal
+            updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId);
+            updateButtonText();
+            $('#exampleModal').modal('show');
+
+            // Check the btnradioA2 radio button
+            $('input[id=btnradioA2]').attr('checked', 'checked');
+        }
     }
-}, 1); // Chờ ooo miliseconds trước khi chạy script
+}, 1); // Chờ 1 miliseconds trước khi chạy script
 
 function updateModalValues(selectedTypeIds, selectedProvinceId, selectedCityId, address, selectedPriceRangeId, selectedAreaRangeId) {
     // Cập nhật các checkbox Loại BDS
@@ -386,8 +395,8 @@ if (alertTrigger) {
           Vui lòng nhập tiêu đề.
         </div>
       </div>
-      <div class="mb-3">
-        <textarea class="form-control" id="message" name="message" rows="10" required placeholder="Tin nhắn"></textarea>
+      <div class="form-group">
+        <textarea class="form-control" id="message" name="message" rows="10" required placeholder="Tin nhắn">{{ message_for_bds if message_for_bds else '' }}</textarea>
         <div class="valid-feedback">
             Looks good!
         </div>

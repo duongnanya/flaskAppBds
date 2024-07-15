@@ -12,7 +12,7 @@ contact_bp = Blueprint("contact", __name__)
 
 @contact_bp.route("/contact", methods=["GET", "POST"])
 def contact():
-    # Lấy thông tin Code để tìm kiếm BĐS
+    # Lấy thông tin để tìm kiếm BĐS
     types = Type.query.all()
     provinces = Province.query.all()
     cities = City.query.all()
@@ -21,7 +21,35 @@ def contact():
     directions = Direction.query.all()
 
     if request.method == "POST":
-        if 'name' in request.form:  # Check if contact form is submitted
+        form_type = request.form.get("form_type")
+
+        if form_type == "message_form":
+            # Xử lý form gửi tin nhắn
+            title = request.form.get("title", "")  # Get title if available
+            bds_id = request.form.get("id", "")    # Get BĐS id if available
+            message = request.form["message"]
+
+            # Tạo chuỗi message đầy đủ
+            full_message = f"Tôi muốn hỏi về: {title}\nMã tin: {bds_id}\n---\nCâu hỏi: {message}"
+
+            # Truyền dữ liệu sang template `os-contact.html`
+            return render_template(
+                'outside/os-contact.html',
+                is_from_bds_detail=True,
+                message_for_bds=full_message,
+                title=title,
+                bds_id=bds_id,
+                types=types,
+                provinces=provinces,
+                cities=cities,
+                priceRanges=priceRanges,
+                areaRanges=areaRanges,
+                directions=directions,
+                user=current_user  # Pass the current user to the template
+            )
+
+        elif 'name' in request.form:
+            # Xử lý form liên hệ
             name = request.form["name"]
             email = request.form["email"]
             phone = request.form["phone"]
@@ -41,8 +69,9 @@ def contact():
 
             flash("Tin nhắn của bạn đã được gửi thành công!")
             return redirect(url_for("contact.contact"))  # Redirect back to the contact page
-        else:  # Search form is submitted
-            # Lấy thông tin từ các trường tìm kiếm
+
+        else:
+            # Xử lý form tìm kiếm
             type_ids = request.form.getlist('type-id[]')
             selected_province_id = request.form.get('province-select')
             selected_city_id = request.form.get('city-select')
@@ -53,21 +82,19 @@ def contact():
 
             return render_template(
                 'outside/os-contact.html',
-                is_from_bds = True,
-                type_ids=type_ids, 
-                selected_province_id=selected_province_id, 
-                selected_city_id=selected_city_id, 
-                address=address, 
-                selected_price_range_id=selected_price_range_id, 
+                is_from_bds_list=True,
+                type_ids=type_ids,
+                selected_province_id=selected_province_id,
+                selected_city_id=selected_city_id,
+                address=address,
+                selected_price_range_id=selected_price_range_id,
                 selected_area_range_id=selected_area_range_id,
-                
                 types=types,
                 provinces=provinces,
                 cities=cities,
                 priceRanges=priceRanges,
                 areaRanges=areaRanges,
                 directions=directions,
-
                 user=current_user  # Pass the current user to the template
             )
     else:

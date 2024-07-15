@@ -92,6 +92,20 @@ time_range.forEach(time => {
 
 // Đặt giá trị mặc định là 09:00
 timepicker.value = "09:00";
+
+// --- xử lý Gửi câu hỏi từ trang os-bds-detail.html
+$('form.needs-validation').on('submit', function (event) {
+    if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    $(this).addClass('was-validated');
+});
+
+// --- focus textarea ngay khi accordion Đặt câu hỏi được mở
+$('#collapseTwo').on('shown.bs.collapse', function() {
+    $('#message').focus();
+});
 </script>
 {% endblock %}
 
@@ -184,20 +198,28 @@ timepicker.value = "09:00";
             </button>
           </h2>
           <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample" >
+            <form action="{{ url_for('contact.contact') }}" method="POST" class="needs-validation" novalidate>
             <div class="accordion-body d-flex flex-column align-items-center">
-              <div class="mb-3" style="width: 100%">
-                <textarea class="form-control" rows="5" placeholder="Có chính chủ không? Đầy đủ sổ đỏ không?" ></textarea>
-              </div>
-              <div>
-                <button type="button" class="btn btn-primary">Gửi</button>
-              </div>
-              <p class="mt-2 text-center">
-                <em>* Bạn sẽ được chuyển đến trang Liên hệ</em>
-              </p>
+                <input type="hidden" name="form_type" value="message_form">
+                <input type="hidden" name="title" value="{{ bds.title }}">
+                <input type="hidden" name="id" value="{{ bds.id }}">
+
+                <div class="mb-3" style="width: 100%;">
+                  <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Có chính chủ không? Đầy đủ sổ đỏ không?"></textarea>
+                  <div class="invalid-feedback">
+                    Vui lòng nhập tin nhắn.
+                  </div>
+                </div>
+                <div>
+                  <button type="submit" class="btn btn-primary">Gửi</button>
+                </div>
+                <p class="mt-2 text-center">
+                  <em>* Bạn sẽ được chuyển đến trang Liên hệ</em>
+                </p>
             </div>
+            </form>
           </div>
         </div>
-      </div>
     </div>
   </div>
 </div>
