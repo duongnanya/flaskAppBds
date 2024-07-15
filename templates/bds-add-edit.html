@@ -83,10 +83,22 @@ updateButtonText();
             </div>
         </div>
     
+        <div class="row mb-3">
+            <div class="col-12">
+                <label for="title" class="form-label">Tiêu đề:</label>
+                <input type="text" id="title" name="title" value="{{ bds.title }}" class="form-control" required>
+            </div>
+        </div>
+        <!-- TODO thêm thư viện Editor -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <label for="content" class="form-label">Nội dung:</label>
+                <textarea id="content" name="content" class="form-control" rows="10" required>{{ bds.content }}</textarea>
+            </div>
+        </div>
         <div class="mb-3">
-        <label for="img_url" class="form-label">Upload ảnh:</label>
-        <input id="input-2" name="input2[]" type="file" class="file form-control"  data-show-upload="false" data-show-caption="true" multiple>
-
+            <label for="img_url" class="form-label">Upload ảnh:</label>
+            <input id="input-2" name="input2[]" type="file" class="file form-control"  data-show-upload="false" data-show-caption="true" multiple>
         </div>
         <div class="mb-3">
             {% if bds %}

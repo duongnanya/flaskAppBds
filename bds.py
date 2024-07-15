@@ -230,6 +230,8 @@ def bds_add_edit():
 
     if request.method == "POST":
         # Lấy dữ liệu từ form
+        title = request.form.get("title")
+        content = request.form.get("content")
         type_ids = request.form.getlist("type-id[]")
         province_id = request.form.get("province-id")
         city_id = request.form.get("city-id")
@@ -243,6 +245,8 @@ def bds_add_edit():
 
         if bds:
             # Cập nhật thông tin BDS
+            bds.title = title
+            bds.content = content
             bds.province_id = province_id
             bds.city_id = city_id
             # bds.direction_id = direction_id
@@ -275,6 +279,8 @@ def bds_add_edit():
         else:
             # Tạo BDS mới
             new_bds = Bds(
+                title=title,
+                content=content,
                 province_id=province_id,
                 city_id=city_id,
                 # direction_id=direction_id,
@@ -402,7 +408,7 @@ def bds_delete(bds_id):
 @bds_bp.route("/os_bds_list", methods=["GET", "POST"])
 def os_bds_list():
     # Initialize query and data
-    query = Bds.query.filter_by(published_flg=True, del_flg=False)
+    query = Bds.query.filter_by(published_flg=True, del_flg=False).order_by(Bds.update_dt.desc())
     bds_data = None
     bds_type_ids = []
     bds_province_id = None

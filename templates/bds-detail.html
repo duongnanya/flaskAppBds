@@ -53,6 +53,14 @@ $(".delete-btn").click(function(e) {
             <td>{{ bds.id }}</td>
         </tr>
         <tr>
+            <th>Tiêu đề</th>
+            <td>{{ bds.title }}</td>
+        </tr>
+        <tr>
+            <th>Nội dung</th>
+            <td>{{ bds.content }}</td>
+        </tr>
+        <tr>
             <th>Ảnh ({{bds_images | count}})</th>
             <td>
                 {% if bds %}
