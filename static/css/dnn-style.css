@@ -268,3 +268,13 @@ body {
 .os-bds-detail-html .col-6 + .col-6 {
   padding-left: 4px; /* Giảm khoảng cách giữa ảnh 1 và các ảnh khác */
 }
+.os-bds-detail-html .hover-effect {
+  transition: transform 0.3s ease, filter 0.3s ease; /* Chuyển đổi mượt mà */
+}
+.os-bds-detail-html .hover-effect:hover {
+  filter: brightness(1.2); /* Tăng độ sáng của ảnh lên 20% */
+  transform: scale(1.03); /* Phóng to ảnh lên 3% */
+}
+.os-bds-detail-html .main-image-hover:hover {
+  transform: scale(1.01); /* Phóng to ảnh đầu tiên lên 1% */
+}

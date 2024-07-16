@@ -118,20 +118,20 @@ $('#collapseTwo').on('shown.bs.collapse', function() {
     <div class="col-6">
       <div class="position-relative h-100">
           <img src="{{ url_for('static', filename='uploads/' + bds_images[0].image.filename) if bds_images|length > 0 else 'https://via.placeholder.com/800x600' }}"
-               class="img-fluid main-image" alt="Main" />
+               class="img-fluid main-image hover-effect main-image-hover" alt="Main" />
       </div>
     </div>
     <div class="col-6">
         <div class="image-grid h-100">
             <img src="{{ url_for('static', filename='uploads/' + bds_images[1].image.filename) if bds_images|length > 1 else 'https://via.placeholder.com/400x300' }}"
-                alt="Image 2" class="img-2" />
+                alt="Image 2" class="img-2 hover-effect" />
             <img src="{{ url_for('static', filename='uploads/' + bds_images[2].image.filename) if bds_images|length > 2 else 'https://via.placeholder.com/400x300' }}"
-                alt="Image 3" class="img-3" />
+                alt="Image 3" class="img-3 hover-effect" />
             <img src="{{ url_for('static', filename='uploads/' + bds_images[3].image.filename) if bds_images|length > 3 else 'https://via.placeholder.com/400x300' }}"
-                alt="Image 4" class="img-4" />
+                alt="Image 4" class="img-4 hover-effect" />
             <div class="see-more position-relative img-5">
                 <img src="{{ url_for('static', filename='uploads/' + bds_images[4].image.filename) if bds_images|length > 4 else 'https://via.placeholder.com/400x300' }}"
-                    alt="Image 5" />
+                    alt="Image 5" class="hover-effect" />
                 <div class="position-absolute bottom-0 end-0 mb-3 me-4">
                     <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
                       style="font-size: 1.5rem;" data-bds-id="{{ bds.id }}">
