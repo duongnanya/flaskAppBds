@@ -278,3 +278,61 @@ body {
 .os-bds-detail-html .main-image-hover:hover {
   transform: scale(1.01); /* Phóng to ảnh đầu tiên lên 1% */
 }
+
+/*--- os-bds-detail-html */
+/*--- css for Carousel inside Modal */
+.os-bds-detail-html .img-thumbnail {
+  border-radius: 5px;
+}
+.os-bds-detail-html .img-thumbnail.active {
+  border: 5px solid white; /* Màu khung khi active là trắng */
+}
+.os-bds-detail-html .modal.img-thumbnail.active {
+  border: 5px solid white; /* Màu khung khi active là trắng */
+}
+.os-bds-detail-html .thumbnail-container {
+  width: 100%;
+  overflow-x: auto; /* Cho phép cuộn ngang */
+  display: flex;
+  justify-content: center; /* Căn giữa thumbnail */
+  background-color: #333; /* Nền xám đậm cho khung chứa thumbnail */
+  padding: 10px 0 30px 0;
+  white-space: nowrap; /* Ngăn thumbnail xuống dòng */
+}
+.os-bds-detail-html .thumbnail-wrapper {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+.os-bds-detail-html .thumbnail-wrapper .col {
+  flex: 0 0 auto; /* Không cho phép co giãn thumbnail */
+  margin: 0 5px;
+}
+.os-bds-detail-html .thumbnail-wrapper .col img {
+  width: 100px; /* Đặt chiều rộng cố định cho thumbnail */
+  height: auto; /* Tự động điều chỉnh chiều cao theo tỉ lệ */
+}
+.os-bds-detail-html .modal-body {
+  display: flex;
+  flex-direction: column; /* Sắp xếp nội dung theo cột */
+  justify-content: center;
+  align-items: center;
+  height: calc(100% - 60px); /* Điều chỉnh chiều cao modal body */
+  color: white;
+  position: relative;
+}
+.os-bds-detail-html .carousel-container {
+  height: 88%;
+  text-align: -webkit-center;
+}
+.os-bds-detail-html #carouselExample {
+  width: 80%;
+}
+.os-bds-detail-html .modal-content {
+  background-color: rgba(32, 32, 32, 0.9); /* Đặt màu nền xám đậm với độ trong suốt 10% */
+  border: none;
+}
+.os-bds-detail-html .modal-header,
+.os-bds-detail-html .modal-footer {
+  border: none;
+  color: white;
+}
