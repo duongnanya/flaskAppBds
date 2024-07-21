@@ -211,22 +211,30 @@ $mainThumbnails.on('click', function () {
             </button>
           </h2>
           <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+            <form action="{{ url_for('contact.contact') }}" method="POST" class="needs-validation" novalidate>
+            <input type="hidden" name="form_type" value="appointment_form">
+            <input type="hidden" name="title" value="{{ bds.title }}">
+            <input type="hidden" name="id" value="{{ bds.id }}">
             <div class="accordion-body d-flex flex-column align-items-center">
               <div class="input-group mx-auto">
-                <input id="datepicker" class="form-control" />
+                <input name="datepicker" id="datepicker" class="form-control" />
+                <div class="invalid-feedback">
+                  Vui lòng chọn ngày.
+                </div>
               </div>
             
               <div class="input-group mb-3 mx-auto">
-                  <select id="timepicker" class="form-control">
-                      <option value="">- Chọn giờ -</option>
+                  <select name="timepicker" id="timepicker" class="form-control">
+                      <option value="" disabled>- Chọn giờ -</option>
                   </select>
               </div>
               
-              <button type="button" class="btn btn-primary">Đặt</button>
+              <button type="submit" class="btn btn-primary">Đặt</button>
               <p class="mt-2 text-center">
                   <em>* Bạn sẽ được chuyển đến trang Liên hệ</em>
               </p>
             </div>
+            </form>
           </div>
         </div>
         <div class="accordion-item">
@@ -238,11 +246,10 @@ $mainThumbnails.on('click', function () {
           </h2>
           <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample" >
             <form action="{{ url_for('contact.contact') }}" method="POST" class="needs-validation" novalidate>
+            <input type="hidden" name="form_type" value="message_form">
+            <input type="hidden" name="title" value="{{ bds.title }}">
+            <input type="hidden" name="id" value="{{ bds.id }}">
             <div class="accordion-body d-flex flex-column align-items-center">
-                <input type="hidden" name="form_type" value="message_form">
-                <input type="hidden" name="title" value="{{ bds.title }}">
-                <input type="hidden" name="id" value="{{ bds.id }}">
-
                 <div class="mb-3" style="width: 100%;">
                   <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Có chính chủ không? Đầy đủ sổ đỏ không?"></textarea>
                   <div class="invalid-feedback">

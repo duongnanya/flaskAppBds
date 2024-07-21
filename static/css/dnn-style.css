@@ -142,6 +142,16 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.os-bds-list-html .property-listing:hover {
+  display: flex;
+  align-items: stretch; /* Ensure items stretch to the same height */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
 .os-bds-list-html .property-image {

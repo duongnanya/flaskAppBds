@@ -22,6 +22,32 @@ def contact():
 
     if request.method == "POST":
         form_type = request.form.get("form_type")
+        
+        if form_type == "appointment_form":
+            # Xử lý form đặt lịch hẹn
+            title = request.form.get("title", "")  # Get title if available
+            bds_id = request.form.get("id", "")    # Get BĐS id if available
+            date = request.form.get("datepicker", "")    # Get date from datepicker
+            time = request.form.get("timepicker", "")    # Get time from timepicker
+
+            # Tạo chuỗi message đầy đủ
+            full_message = f"Tôi muốn đặt lịch hẹn về: {title}\nMã tin: {bds_id}\n---\nNgày: {date}\nGiờ: {time}"
+
+            # Truyền dữ liệu sang template `os-contact.html`
+            return render_template(
+                'outside/os-contact.html',
+                is_from_bds_detail=True,
+                message_for_bds=full_message,
+                title=title,
+                bds_id=bds_id,
+                types=types,
+                provinces=provinces,
+                cities=cities,
+                priceRanges=priceRanges,
+                areaRanges=areaRanges,
+                directions=directions,
+                user=current_user  # Pass the current user to the template
+            )
 
         if form_type == "message_form":
             # Xử lý form gửi tin nhắn
