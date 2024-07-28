@@ -114,6 +114,10 @@ def bds_detail(bds_id):
         BdsImage.query.filter_by(bds_id=bds.id, del_flg=False).all() if bds else []
     )
 
+    # Kiểm tra số lượng ảnh để xác định số lượng ảnh còn lại
+    num_images = len(bds_images)
+    remaining_images = max(0, num_images - Config.IMG_QUANTITY)
+
     # Lấy thông tin Type
     bds_types = (
         Type.query.join(BdsTypeRelation)
@@ -202,6 +206,7 @@ def bds_detail(bds_id):
                 bds_city=formatted_city_name,
                 bds_province=formatted_province_name,
                 is_favorite=is_favorite,
+                remaining_images=remaining_images,
             )
 
     # Hiển thị trang os-bds-detail.html nếu chưa đăng nhập hoặc Role = User
@@ -216,6 +221,7 @@ def bds_detail(bds_id):
         price_from=format_currency(bds.price_from),
         price_to=format_currency(bds.price_to),
         is_favorite=is_favorite,
+        remaining_images=remaining_images,
     )
 
 
