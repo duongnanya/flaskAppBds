@@ -40,5 +40,7 @@ class Config:
       
     # Số BDS lấy ra và cho hiện ở mục Top xem BDS 
     TOP_CNT = 4
+    # Số ảnh mặc định hiện ra trang detail 
+    IMG_QUANTITY = 5
     # Số BDS ở mỗi phân trang
     PER_PAGE = 10
