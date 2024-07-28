@@ -127,9 +127,17 @@ def bds_detail(bds_id):
 
     # Lấy thông tin City
     bds_city = City.query.get(bds.city_id)
+    formatted_city_name = (
+        bds_city.name.replace('Huyện', 'H.')
+                    .replace('Thị xã', 'Tx.')
+                    .replace('Quận', 'Q.')
+                    .replace('Thành phố', 'Tp.')
+    )
 
     # Lấy thông tin Province
     bds_province = Province.query.get(bds.province_id)
+    formatted_province_name = bds_province.name.replace('Thành phố', 'Tp.')
+
     is_favorite = False
     user_ip = request.remote_addr  # Lấy địa chỉ IP người dùng
 
@@ -191,8 +199,8 @@ def bds_detail(bds_id):
                 bds_images=bds_images,
                 bds=bds,
                 bds_types=bds_types,
-                bds_city=bds_city,
-                bds_province=bds_province,
+                bds_city=formatted_city_name,
+                bds_province=formatted_province_name,
                 is_favorite=is_favorite,
             )
 
@@ -202,8 +210,8 @@ def bds_detail(bds_id):
         bds_images=bds_images,
         bds=bds,
         bds_types=bds_types,
-        bds_city=bds_city,
-        bds_province=bds_province,
+        bds_city=formatted_city_name,
+        bds_province=formatted_province_name,
         address=bds.address,
         price_from=format_currency(bds.price_from),
         price_to=format_currency(bds.price_to),
@@ -515,7 +523,17 @@ def validate_image(stream):
 @bds_bp.route("/get_cities/<int:province_id>", methods=["GET"])
 def get_cities(province_id):
     cities = City.query.filter_by(province_id=province_id).all()
-    return jsonify([{"id": city.id, "name": city.name} for city in cities])
+    formatted_cities = [
+        {
+            "id": city.id,
+            "name": city.name.replace('Huyện', 'H.')
+                             .replace('Thị xã', 'Tx.')
+                             .replace('Quận', 'Q.')
+                             .replace('Thành phố', 'Tp.')
+        }
+        for city in cities
+    ]
+    return jsonify(formatted_cities)
 
 
 def get_bds_data(query):

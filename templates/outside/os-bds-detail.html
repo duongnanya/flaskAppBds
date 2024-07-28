@@ -195,8 +195,7 @@ $mainThumbnails.on('click', function () {
           <p class="mb-2"><strong>Giá:</strong> {{ price_from }} - {{ price_to }}</p>
           <p class="mb-2"><strong>Diện tích:</strong> {{ bds.area }} m²</p>
           <p class="mb-2"><strong>Tỉnh/Thành phố:</strong> 
-            {{ bds_province.name.replace('Thành phố', 'Tp.') }}, 
-            {{ bds_city.name.replace('Huyện', 'H.').replace('Thị xã', 'Tx.').replace('Quận', 'Q.').replace('Thành phố', 'Tp.') }}
+            {{ bds_city }}, {{ bds_province }}
           </p>
           
           <br><br>

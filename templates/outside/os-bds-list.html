@@ -283,7 +283,7 @@ function getCitiesByProvince(provinceId) {
               `);
 
         $.each(data, function(index, city) {
-          var cityName = city.name.replace('Huyện', 'H.').replace('Thị xã', 'Tx.').replace('Quận', 'Q.').replace('Thành phố', 'Tp.');
+          var cityName = city.name;
           cityDropdownMenu.append(`
             <li class="dropdown-item-row">
               <a class="dropdown-item item-link-city" data-value="${city.id}">${cityName}</a>
@@ -296,7 +296,7 @@ function getCitiesByProvince(provinceId) {
         // --- Sau khi thêm các mục city vào dropdown
         if (data.length > 0) {
           // **Lấy text và value của item đầu tiên**
-          var firstCityName = data[0].name.replace('Huyện', 'H.').replace('Thị xã', 'Tx.').replace('Quận', 'Q.').replace('Thành phố', 'Tp.');
+          var firstCityName = data[0].name;
           var firstCityText = `${firstCityName}`;
           var firstCityId = data[0].id;
 
