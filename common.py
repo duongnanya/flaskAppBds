@@ -49,6 +49,11 @@ def handle_imported_file():
     return render_template("import-province-city.html", success=True)
 
 
+@common_bp.route("/about_us")
+def about_us():
+    return render_template("about-us.html")
+
+
 def get_categories():
     categories = Category.query.filter_by(del_flg=False).all()
     return categories

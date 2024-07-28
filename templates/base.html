@@ -63,6 +63,9 @@
                         <a class="nav-link" href="{{ url_for('contact.contact') }}">★ Liên hệ</a>
                     </li>
                     {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('common.about_us') }}">★ Về chúng tôi</a>
+                    </li>
                 </ul>
                 <div class="btn-group">
                     {% if current_user.is_authenticated %}
