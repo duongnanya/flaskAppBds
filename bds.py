@@ -546,6 +546,15 @@ def get_bds_data(query):
         bds_city = City.query.get(bds.city_id)
         bds_province = Province.query.get(bds.province_id)
 
+        # Áp dụng replace trên tên thành phố và tên tỉnh
+        formatted_city_name = (
+            bds_city.name.replace('Huyện', 'H.')
+                        .replace('Thị xã', 'Tx.')
+                        .replace('Quận', 'Q.')
+                        .replace('Thành phố', 'Tp.')
+        )
+        formatted_province_name = bds_province.name.replace('Thành phố', 'Tp.')
+
         if user_is_auth():
             is_favorite = (
                 BdsUserRelation.query.filter_by(
@@ -562,8 +571,8 @@ def get_bds_data(query):
                 "first_image_url": first_image_url,
                 "remaining_images_count": remaining_images_count,
                 "bds_types": bds_types,
-                "bds_city": bds_city,
-                "bds_province": bds_province,
+                "bds_city": formatted_city_name,
+                "bds_province": formatted_province_name,
                 "address": bds.address,
                 "price_from": format_currency(bds.price_from),
                 "price_to": format_currency(bds.price_to),

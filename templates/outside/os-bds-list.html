@@ -681,8 +681,7 @@ $(window).on('blur', function() {
                       {% endfor %}<br>
                       <i class="bi bi-credit-card-2-back"></i><span class="price"> {{ bds_item.price_to }}</span>   
                       <i class="bi bi-aspect-ratio"></i><span class="area"> {{ bds_item.bds.area }} m²</span>   
-                      <i class="bi bi-geo-alt"></i> {{ bds_item.bds_city.name.replace('Huyện', 'H.').replace('Thị xã', 'Tx.').replace('Quận', 'Q.').replace('Thành phố', 'Tp.') }},
-                      {{ bds_item.bds_province.name.replace('Thành phố', 'Tp.') }}
+                      <i class="bi bi-geo-alt"></i> {{ bds_item.bds_city }}, {{ bds_item.bds_province }}
                   </p>
               </div>
           </div>
@@ -893,8 +892,7 @@ $(window).on('blur', function() {
                 {{ bds_type.name }}{% if not loop.last %} / {% endif %}
             {% endfor %}<br>
             {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
-            {{ bds_item.bds_city.name.replace('Huyện', 'H.').replace('Thị xã', 'Tx.').replace('Quận', 'Q.').replace('Thành phố', 'Tp.') }}, 
-              {{ bds_item.bds_province.name.replace('Thành phố', 'Tp.') }}
+            {{ bds_item.bds_city }}, {{ bds_item.bds_province }}
           </p>
         </div>
       </div>
