@@ -205,18 +205,15 @@ class Bds(db.Model):
     images = db.relationship("BdsImage", backref="bds")
     users = db.relationship("User", secondary="r_bds_user", backref="bds")
 
-    def __init__(self, title, content, price_from, price_to, area, address, bed_room_quantity, type_id, province_id, city_id, direction_id, sold_flg=False, published_flg=False, create_user_id=None, update_user_id=None):
+    def __init__(self, title, content, price_from, price_to, area, address, province_id, city_id, sold_flg=False, published_flg=False, create_user_id=None, update_user_id=None):
         self.content = content
         self.title = title
         self.price_from = price_from
         self.price_to = price_to
         self.area = area
         self.address = address
-        self.bed_room_quantity = bed_room_quantity
-        self.type_id = type_id
         self.province_id = province_id
         self.city_id = city_id
-        self.direction_id = direction_id
         self.sold_flg = sold_flg
         self.published_flg = published_flg
         self.create_user_id = create_user_id

@@ -247,8 +247,8 @@ def bds_add_edit():
         title = request.form.get("title")
         content = request.form.get("content")
         type_ids = request.form.getlist("type-id[]")
-        province_id = request.form.get("province-id")
-        city_id = request.form.get("city-id")
+        province_id = request.form.get("province-hidden")
+        city_id = request.form.get("city-hidden")
         # direction_id = request.form.get("direction-id")
         address = request.form.get("address")
         price_from = float(request.form.get("price-from"))
@@ -387,6 +387,8 @@ def bds_add_edit():
         provinces=provinces,
         cities=cities,
         # directions=directions,
+        selected_province_id=bds.province_id if bds else None,
+        selected_city_id=bds.city_id if bds else None,
     )
 
 
@@ -434,10 +436,10 @@ def os_bds_list():
     # Handle POST request (filtering)
     if request.method == "POST":
         bds_type_ids = request.form.getlist("type-id[]")
-        bds_province_id = request.form.get("province-select")
-        bds_city_id = request.form.get("city-select")
-        price_range_id = request.form.get("price-range-select")
-        area_range_id = request.form.get("area-range-select")
+        bds_province_id = request.form.get("province-hidden")
+        bds_city_id = request.form.get("city-hidden")
+        price_range_id = request.form.get("price-range-hidden")
+        area_range_id = request.form.get("area-range-hidden")
         keyword_input = request.form.get("keyword-input")
 
         # Chuyển đổi bds_province_id và bds_city_id thành số nguyên

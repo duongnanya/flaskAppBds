@@ -12,57 +12,252 @@ $('input[type="checkbox"][name="delete_images[]"]').change(function() {
     }
 });
 
-//--- Tìm Cities tương ứng Provinces
-$('#province-select').on('change', function() {
-    var provinceId = $(this).val();
-    if (provinceId) {
-        $.ajax({
-            url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
-            type: 'GET',
-            success: function(data) {
-                $('#city-select').prop('disabled', false);
-                $('#city-select').empty();
-                $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
-                $.each(data, function(index, city) {
-                    $('#city-select').append('<option value="' + city.id + '">' + city.name + '</option>');
-                });
-                // Chọn option đầu tiên nếu có dữ liệu
-                if (data.length > 0) {
-                    $('#city-select').val(data[0].id);
-                }
-            }
-        });
-    } else {
-        $('#city-select').prop('disabled', true);
-        $('#city-select').empty();
-        $('#city-select').append('<option value="">- Chọn quận / huyện -</option>');
-    }
-});
-
 //--- hiển thị tên Type được chọn trên Dropdown
 var $dropdown = $('.dropdown');
-var $button = $dropdown.find('#type-dropdown');
+var $button = $dropdown.find('#type-drop-btn');
 var $checkboxes = $dropdown.find('input[type="checkbox"]');
 
-function updateButtonText() {
-    var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
-    var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
+function updateTypeButtonText() {
+  var $dropdown = $('#type-drop-btn').parent('.dropdown');
+  var $button = $dropdown.find('#type-drop-btn');
+  var checkedCount = $dropdown.find('input[type="checkbox"]:checked').length;
+  var firstCheckedLabel = $dropdown.find('input[type="checkbox"]:checked').first().siblings('label').text();
 
-    if (checkedCount === 0) {
-        $button.text('Chọn loại');
-    } else if (checkedCount === 1) {
-        $button.text(firstCheckedLabel);
-    } else {
-        $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
-    }
+  if (checkedCount === 0) {
+    $button.text('Loại BĐS');
+    $button.addClass('btn-outline-secondary').removeClass('btn-secondary'); // Thêm class btn-outline-secondary, bỏ class btn-secondary
+  } else if (checkedCount === 1) {
+    $button.text(firstCheckedLabel);
+    $button.addClass('btn-secondary').removeClass('btn-outline-secondary'); // Thêm class btn-secondary, bỏ class btn-outline-secondary
+  } else {
+    $button.text(firstCheckedLabel + ' (+' + (checkedCount - 1) + ')');
+    $button.addClass('btn-secondary').removeClass('btn-outline-secondary'); // Thêm class btn-secondary, bỏ class btn-outline-secondary
+  }
 }
 
 $checkboxes.on('change', function() {
-    updateButtonText();
+    updateTypeButtonText();
 });
 
 // Cập nhật nội dung của button ngay khi trang được load
-updateButtonText();
+updateTypeButtonText();
+
+//--- xử lý Find Tỉnh thành theo Keyword
+// Khi dropdown button được nhấn
+$('#province-drop-toggle-btn').on('shown.bs.dropdown', function() {
+    // Focus vào ô keyword
+    $('#province-keyword-input').focus();
+    // Làm trống giá trị trong ô keyword
+    $('#province-keyword-input').val('');
+    // Hiện toàn bộ dropdown-item
+    $('#province-drop-menu-ul .dropdown-item-li').show();
+});
+
+// Khi dropdown button được nhấn
+$('#city-drop-toggle-btn').on('shown.bs.dropdown', function() {
+    // Focus vào ô keyword
+    $('#city-keyword-input').focus();
+    // Làm trống giá trị trong ô keyword
+    $('#city-keyword-input').val('');
+    // Hiện toàn bộ dropdown-item
+    $('#city-drop-menu-ul .dropdown-item-li').show();
+});
+
+// Xử lý khi người dùng nhập vào ô keyword
+$('#province-keyword-input').on('input', function() {
+    var keyword = $(this).val().toLowerCase();
+    // Chuyển đổi keyword thành dạng không dấu và loại bỏ khoảng trắng để dễ so sánh
+    var normalizedKeyword = keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+
+    // Duyệt qua các dropdown-item
+    $('#province-drop-menu-ul .dropdown-item').each(function() {
+        var itemText = $(this).text().toLowerCase();
+        var normalizedItemText = itemText.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+
+        // Nếu keyword là rỗng hoặc trùng khớp với item text thì hiện item, ngược lại thì ẩn item
+        if (normalizedKeyword === '' || normalizedItemText.includes(normalizedKeyword)) {
+            $(this).parent().show();
+        } else {
+            $(this).parent().hide();
+        }
+    });
+});
+
+// --- click item Province thì gán tên Tỉnh vào Nút, update City tương ứng
+$('#province-drop-menu-ul .province-drop-item-a').click(function() {
+  var text = $(this).text();
+  var provinceId = $(this).data('value');
+
+  $('#province-drop-toggle-btn').text(text);
+  $('input[type=hidden][id=province-hidden]').val(provinceId).trigger('change');
+});
+
+// --- Xử lý khi input hidden #province-hidden thay đổi
+$('input[type=hidden][id=province-hidden]').on('change', function() {
+  var provinceId = $(this).val();
+
+  // Kiểm tra nếu provinceId = 0
+  if (provinceId === '0' || provinceId === 0 || provinceId === "None") { 
+    // Reset dropdown Province
+    $('#province-drop-toggle-btn').text(' Tỉnh/Thành ');
+
+    // Reset dropdown City
+    $('#city-drop-toggle-btn').text(' Quận/Huyện ').prop('disabled', true)
+      .addClass("btn-outline-secondary").removeClass("btn-secondary"); 
+    $('#city-drop-menu-ul').empty(); // Xóa danh sách city hiện tại (nếu có)
+
+    // Reset #city-hidden về 0
+    $('#city-hidden').val('0'); 
+  } else {
+    getCitiesByProvince(provinceId);
+  }
+
+  // Cập nhật class cho dropdown button
+  updateProvinceButtonClass();
+});
+
+// --- Sử dụng event delegation để bắt sự kiện click trên city-drop-item-a
+$('#city-drop-menu-ul').on('click', '.city-drop-item-a', function() {
+  var text = $(this).text();
+  var cityId = $(this).data('value');
+
+  $('#city-drop-toggle-btn').text(text);
+  $('input[type=hidden][id=city-hidden]').val(cityId).trigger('change');
+});
+
+// --- Xử lý khi input hidden #city-hidden thay đổi
+$('input[type=hidden][id=city-hidden]').on('change', function() {
+  var cityId = $(this).val();
+  
+  // Cập nhật class cho dropdown button City
+  updateCityButtonClass();
+});
+
+// --- Hàm cập nhật class cho dropdown button Province
+function updateProvinceButtonClass() {
+  var provinceId = $('#province-hidden').val();
+
+  if (provinceId && provinceId !== '0' && provinceId !== 'None') {
+    $('#province-drop-toggle-btn').addClass('btn-secondary').removeClass('btn-outline-secondary');
+  } else {
+    $('#province-drop-toggle-btn').addClass('btn-outline-secondary').removeClass('btn-secondary');
+  }
+}
+
+// --- Hàm cập nhật class cho dropdown button City
+function updateCityButtonClass() {
+  var cityId = $('#city-hidden').val();
+
+  if (cityId && cityId !== '0' && cityId !== 'None') {
+    $('#city-drop-toggle-btn').addClass('btn-secondary').removeClass('btn-outline-secondary');
+  } else {
+    $('#city-drop-toggle-btn').addClass('btn-outline-secondary').removeClass('btn-secondary');
+  }
+}
+
+// --- Tìm Cities tương ứng Provinces
+function getCitiesByProvince(provinceId) {
+  if (provinceId) {
+    $.ajax({
+      url: '{{ url_for("bds.get_cities", province_id=999) }}'.replace('999', provinceId),
+      type: 'GET',
+      success: function(data) {
+        var cityDropdownMenu = $('#city-drop-menu-ul');
+        cityDropdownMenu.empty();
+
+        // Thêm input tìm kiếm
+        cityDropdownMenu.append(`
+                  <li>
+                      <div class="row col-10 offset-1">
+                          <input type="text" class="form-control col-6" id="city-keyword-input" placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+                      </div>
+                  </li>
+              `);
+
+        $.each(data, function(index, city) {
+          var cityName = city.name;
+          cityDropdownMenu.append(`
+            <li class="dropdown-item-li">
+              <a class="dropdown-item city-drop-item-a" data-value="${city.id}">${cityName}</a>
+            </li>
+          `);
+        });
+
+        $('#city-drop-toggle-btn').prop('disabled', false).text(' Quận/Huyện ');
+
+        // --- Sau khi thêm các mục city vào dropdown
+        if (data.length > 0) {
+          // **Lấy text và value của item đầu tiên**
+          var firstCityName = data[0].name;
+          var firstCityText = `${firstCityName}`;
+          var firstCityId = data[0].id;
+
+          // **Gán giá trị cho #city-hidden trước**
+          $('#city-hidden').val(firstCityId); 
+
+          // **Bây giờ mới kiểm tra selectedCityId**
+          var selectedCityId = $('#city-hidden').val();
+          if (selectedCityId) { 
+            // Cập nhật text cho dropdown button 
+            $('#city-drop-toggle-btn').text(firstCityText);
+            // Trigger change event (nếu cần)
+            $('#city-hidden').trigger('change'); 
+          }
+        }
+
+        // --- Xử lý tìm kiếm city (giữ nguyên)
+        $('#city-keyword-input').on('input', function() {
+          var keyword = $(this).val().toLowerCase();
+          var normalizedKeyword = keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+
+          $('#city-drop-menu-ul .dropdown-item').each(function() {
+            var itemText = $(this).text().toLowerCase();
+            var normalizedItemText = itemText.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+
+            if (normalizedKeyword === '' || normalizedItemText.includes(normalizedKeyword)) {
+              $(this).parent().show();
+            } else {
+              $(this).parent().hide();
+            }
+          });
+        });
+      }
+    });
+  } else {
+    $('#city-drop-menu-ul').empty();
+    $('#city-drop-toggle-btn').prop('disabled', true).text(' Quận/Huyện ')
+      .addClass("btn-outline-secondary").removeClass("btn-secondary"); ;
+  }
+}
+
+// --- khi load trang, cập nhật tên Nút thành tên của Tỉnh/Thành có value từ hidden (giữ nguyên)
+var selectedProvinceId = "{{ selected_province_id }}";
+var selectedCityId = "{{ selected_city_id }}";
+
+// --- xử lý ngay khi Load trang
+setTimeout(function() {
+
+  // Cập nhật nội dung của button ngay khi trang được load
+  updateTypeButtonText();
+
+  if (selectedProvinceId) {
+    var selectedProvinceItem = $('.province-drop-item-a[data-value="' + selectedProvinceId + '"]');
+    if (selectedProvinceItem.length > 0) {
+      var selectedProvinceName = selectedProvinceItem.text();
+      $('#province-drop-toggle-btn').text(selectedProvinceName);
+    }
+    $('input[type=hidden][id=province-hidden]').val(selectedProvinceId).trigger('change');
+  }
+
+  if (selectedCityId) {
+    var selectedCityItem = $('.city-drop-item-a[data-value="' + selectedCityId + '"]');
+    if (selectedCityItem.length > 0) {
+      var selectedCityName = selectedCityItem.text();
+      $('#city-drop-toggle-btn').text(selectedCityName);
+    }
+    $('input[type=hidden][id=city-hidden]').val(selectedCityId).trigger('change');
+  }
+}, 1);
 
 </script>
 {% endblock %}
@@ -72,6 +267,15 @@ updateButtonText();
 {% block content %}
 <div class="container">
     <form class="" method="POST" action="{{ url_for('bds.bds_add_edit', bds_id=bds.id if bds else None) }}" enctype="multipart/form-data">
+        <input type="hidden" name="province-hidden" id="province-hidden"
+            value="{% if selected_province_id %}{{ selected_province_id }}{% else %}0{% endif %}">
+        <input type="hidden" name="city-hidden" id="city-hidden"
+            value="{{ selected_city_id }}">
+        <input type="hidden" name="price-range-hidden" id="price-range-hidden"
+            value="{% if selected_price_range_id %}{{ selected_price_range_id }}{% else %}0{% endif %}">
+        <input type="hidden" name="area-range-hidden" id="area-range-hidden"
+            value="{% if selected_area_range_id %}{{ selected_area_range_id }}{% else %}0{% endif %}">
+
         <div class="row">
             <div class="col-10">
                 <h1>{% if bds %}Chỉnh sửa Bds{% else %}Thêm Bds{% endif %}</h1>
@@ -83,22 +287,92 @@ updateButtonText();
             </div>
         </div>
     
-        <div class="row mb-3">
-            <div class="col-12">
-                <label for="title" class="form-label">Tiêu đề:</label>
-                <input type="text" id="title" name="title" value="{{ bds.title }}" class="form-control" required>
-            </div>
-        </div>
-        <!-- TODO thêm thư viện Editor -->
-        <div class="row mb-3">
-            <div class="col-12">
-                <label for="content" class="form-label">Nội dung:</label>
-                <textarea id="content" name="content" class="form-control" rows="10" required>{{ bds.content }}</textarea>
-            </div>
-        </div>
         <div class="mb-3">
             <label for="img_url" class="form-label">Upload ảnh:</label>
             <input id="input-2" name="input2[]" type="file" class="file form-control"  data-show-upload="false" data-show-caption="true" multiple>
+        </div>
+        <div class="mb-3">
+            <label for="" class="form-label">Loại BĐS:</label>
+            <div class="dropdown">
+                <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-drop-btn" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    Chọn loại
+                </button>
+                <div class="dropdown-menu p-4 col-12">
+                    <p>(Có thể chọn nhiều)</p>
+                    {% if bds %}
+                    <ul class="list-group">
+                        {% for type in types %}
+                        <li class="list-group-item">
+                            <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}"
+                                {% if type in bds.bds_type_relations|map(attribute='type') %}checked{% endif %}>
+                            <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <ul class="list-group">
+                        {% for type in types %}
+                        <li class="list-group-item">
+                            <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}">
+                            <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="province" class="form-label">Tỉnh/Thành phố:</label>
+            <button class="btn btn-outline-secondary dropdown-toggle col-12" id="province-drop-toggle-btn"
+                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Tỉnh/Thành
+            </button>
+            <ul class="dropdown-menu" id="province-drop-menu-ul">
+                <li>
+                    <div class="row col-10 offset-1">
+                        <input type="text" class="form-control col-6" id="province-keyword-input"
+                            placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+                    </div>
+                </li>
+                <li class="dropdown-item-li">
+                    <a class="dropdown-item province-drop-item-a" data-value="0">- Xóa chọn -</a>
+                </li>
+                {% for province in provinces %}
+                <li class="dropdown-item-li">
+                    <a class="dropdown-item province-drop-item-a" data-value="{{ province.id }}">{{ province.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="mb-3">
+            <label for="city" class="form-label">Quận/Huyện:</label>
+            <button class="btn btn-outline-secondary dropdown-toggle col-12" id="city-drop-toggle-btn" 
+                type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                Quận/Huyện
+            </button>
+            <ul class="dropdown-menu" id="city-drop-menu-ul">
+                <li>
+                    <div class="row col-10 offset-1">
+                        <input type="text" class="form-control col-6" id="city-keyword-input" 
+                            placeholder="từ khóa" aria-label="keyword" aria-describedby="addon-wrapping">
+                    </div>
+                </li>
+                {% for city in cities %}
+                <li class="dropdown-item-li">
+                    <a class="dropdown-item city-drop-item-a" data-value="{{ city.id }}">{{ city.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="mb-3">
+            <label for="title" class="form-label">Tiêu đề:</label>
+            <input type="text" id="title" name="title" value="{{ bds.title }}" class="form-control" required>
+        </div>
+        <!-- TODO thêm thư viện Editor -->
+        <div class="mb-3">
+            <label for="content" class="form-label">Nội dung:</label>
+            <textarea id="content" name="content" class="form-control" rows="10" required>{{ bds.content }}</textarea>
         </div>
         <div class="mb-3">
             {% if bds %}
@@ -121,126 +395,40 @@ updateButtonText();
             </div>
             {% endif %}
         </div>
-        <div class="row mb-3">
-            <div class="col-4">
-                <label for="" class="form-label">Loại BĐS:</label>
-                <div class="dropdown">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle col-12" id="type-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                      Chọn loại
-                    </button>
-                    <div class="dropdown-menu p-4 col-12">
-                        <p>(Có thể chọn nhiều)</p>
-                        {% if bds %}
-                        <ul class="list-group">
-                            {% for type in types %}
-                            <li class="list-group-item">
-                                <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}"
-                                    {% if type in bds.bds_type_relations|map(attribute='type') %}checked{% endif %}>
-                                <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                        <ul class="list-group">
-                            {% for type in types %}
-                            <li class="list-group-item">
-                                <input class="form-check-input me-1" type="checkbox" name="type-id[]" value="{{ type.id }}" id="type-{{ type.id }}">
-                                <label class="form-check-label" for="type-{{ type.id }}">{{ type.name }}</label>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                    </div>
-                </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Địa chỉ:</label>
+            <input type="text" id="address" name="address" value="{{ bds.address }}" class="form-control" required>
+        </div>
+        <label for="price-from" class="form-label">Giá từ:</label>
+        <div class="input-group mb-3">
+            <input type="number" class="form-control price-input" id="price-from" name="price-from" value="{% if bds %}{{ bds.price_from }}{% endif %}" required>
+        </div>
+        <label for="price-to" class="form-label">Đến:</label>
+        <div class="input-group mb-3">
+            <input type="number" class="form-control price-input" id="price-to" name="price-to" value="{% if bds %}{{ bds.price_to }}{% endif %}" required>
+        </div>
+        <label class="form-label">Diện tích:</label>
+        <input class="form-control mb-3" type="number" name="area" value="{% if bds %}{{ bds.area }}{% endif %}" required>
+        <div class="mb-3">
+            <label class="form-label">Đã bán:</label><br>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sold-flg" id="sold_flg1" value="1" {{ "checked" if bds.sold_flg else "" }}>
+                <label class="form-check-label" for="sold_flg1">Đã bán</label>
             </div>
-            <div class="col-4">
-                <label for="address" class="form-label">Tỉnh/Thành phố:</label>
-                <select class="form-control" name="province-id" id="province-select" required>
-                    <option value="">- Chọn Tỉnh/Thành phố -</option>
-                    {% for province in provinces %}
-                    <option value="{{ province.id }}" {% if bds and bds.province_id == province.id %}selected{% endif %}>{{ province.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-4">
-                <label for="address" class="form-label">Quận/Huyện:</label>
-                <select class="form-control" name="city-id" id="city-select">
-                    <option value="">- Chọn Quận/Huyện -</option>
-                    {% if bds %}
-                    {% for city in cities %}
-                    <option value="{{ city.id }}" {% if bds.city_id == city.id %}selected{% endif %}>{{ city.name }}</option>
-                    {% endfor %}
-                    {% endif %}
-                </select>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sold-flg" id="sold_flg0" value="0" {{ "checked" if not bds.sold_flg else "" }}>
+                <label class="form-check-label" for="sold_flg0">Chưa bán</label>
             </div>
         </div>
-        <div class="row mb-3">
-            <div class="col-12">
-                <label for="address" class="form-label">Địa chỉ:</label>
-                <input type="text" id="address" name="address" value="{{ bds.address }}" class="form-control" required>
+        <div class="mb-3">
+            <label class="form-label">Trạng thái tin:</label><br>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="published-flg" id="published-flg1" value="1" {{ "checked" if bds.published_flg else "" }}>
+                <label class="form-check-label" for="published-flg1">Lưu nháp</label>
             </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-4">
-                <label for="price-from" class="form-label">Giá từ:</label>
-                <div class="input-group">
-                    <input type="number" class="form-control price-input" id="price-from" name="price-from" value="{% if bds %}{{ bds.price_from }}{% endif %}" required>
-
-                    <!-- <input type="radio" class="btn-check" name="btnradio1" id="btnradio1" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio1">Triệu</label>
-                  
-                    <input type="radio" class="btn-check" name="btnradio1" id="btnradio2" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio2">Tỷ</label> -->
-                </div>
-            </div>
-            <div class="col-4">
-                <label for="price-to" class="form-label">Đến:</label>
-                <div class="input-group">
-                    <input type="number" class="form-control price-input" id="price-to" name="price-to" value="{% if bds %}{{ bds.price_to }}{% endif %}" required>
-
-                    <!-- <input type="radio" class="btn-check" name="btnradio2" id="btnradio3" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio3">Triệu</label>
-                  
-                    <input type="radio" class="btn-check" name="btnradio2" id="btnradio4" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio4">Tỷ</label> -->
-                </div>
-            </div>
-            <div class="col-4">
-                <label class="form-label">Diện tích:</label>
-                <input class="form-control" type="number" name="area" value="{% if bds %}{{ bds.area }}{% endif %}" required>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <!-- <div class="col-4">
-                <label class="form-label">Hướng:</label>
-                <select class="form-control" name="direction-id" required>
-                    <option value="">- Chọn hướng -</option>
-                    {% for direction in directions %}
-                    <option value="{{ direction.id }}" {% if bds and bds.direction_id == direction.id %}selected{% endif %}>{{ direction.name }}</option>
-                    {% endfor %}
-                </select>
-            </div> -->
-            <div class="col-4">
-                <label class="form-label">Đã bán:</label><br>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="sold-flg" id="sold_flg1" value="1" {{ "checked" if bds.sold_flg else "" }}>
-                    <label class="form-check-label" for="sold_flg1">Đã bán</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="sold-flg" id="sold_flg0" value="0" {{ "checked" if not bds.sold_flg else "" }}>
-                    <label class="form-check-label" for="sold_flg0">Chưa bán</label>
-                </div>
-            </div>
-            <div class="col-4">
-                <label class="form-label">Trạng thái tin:</label><br>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="published-flg" id="published-flg1" value="1" {{ "checked" if bds.published_flg else "" }}>
-                    <label class="form-check-label" for="published-flg1">Lưu nháp</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="published-flg" id="published-flg0" value="0" {{ "checked" if not bds.published_flg else "" }}>
-                    <label class="form-check-label" for="published-flg0">Đăng ngay</label>
-                </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="published-flg" id="published-flg0" value="0" {{ "checked" if not bds.published_flg else "" }}>
+                <label class="form-check-label" for="published-flg0">Đăng ngay</label>
             </div>
         </div>
     </form>
