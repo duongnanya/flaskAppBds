@@ -129,31 +129,38 @@ $('#province-drop-menu-ul .province-drop-item-a').click(function() {
   var provinceId = $(this).data('value');
 
   $('#province-drop-toggle-btn').text(text);
+  // giúp tránh get_cities (ngay sau khi tải lại trang), làm city đang được chọn bị thay thế bởi city đứng đầu list mới
+  $('input[type=hidden][id=is-reloaded-hidden]').val(false)
   $('input[type=hidden][id=province-hidden]').val(provinceId).trigger('change');
 });
 
 // --- Xử lý khi input hidden #province-hidden thay đổi
 $('input[type=hidden][id=province-hidden]').on('change', function() {
-  var provinceId = $(this).val();
+  if ($('input[type=hidden][id=is-reloaded-hidden]').val() === 'false') {
+    var provinceId = $(this).val();
 
-  // Kiểm tra nếu provinceId = 0
-  if (provinceId === '0' || provinceId === 0 || provinceId === "None") { 
-    // Reset dropdown Province
-    $('#province-drop-toggle-btn').text(' Tỉnh/Thành ');
+    // Kiểm tra nếu provinceId = 0
+    if (provinceId === '0' || provinceId === 0 || provinceId === "None") { 
+      // Reset dropdown Province
+      $('#province-drop-toggle-btn').text(' Tỉnh/Thành ');
 
-    // Reset dropdown City
-    $('#city-drop-toggle-btn').text(' Quận/Huyện ').prop('disabled', true)
-      .addClass("btn-outline-secondary").removeClass("btn-secondary"); 
-    $('#city-drop-menu-ul').empty(); // Xóa danh sách city hiện tại (nếu có)
+      // Reset dropdown City
+      $('#city-drop-toggle-btn').text(' Quận/Huyện ').prop('disabled', true)
+        .addClass("btn-outline-secondary").removeClass("btn-secondary"); 
+      $('#city-drop-menu-ul').empty(); // Xóa danh sách city hiện tại (nếu có)
 
-    // Reset #city-hidden về 0
-    $('#city-hidden').val('0'); 
+      // Reset #city-hidden về 0
+      $('#city-hidden').val('0'); 
+    } else {
+      getCitiesByProvince(provinceId);
+    }
+
+    // Cập nhật class cho dropdown button
+    updateProvinceButtonClass();
   } else {
-    getCitiesByProvince(provinceId);
+    updateProvinceButtonClass();
+    updateCityButtonClass();
   }
-
-  // Cập nhật class cho dropdown button
-  updateProvinceButtonClass();
 });
 
 // --- Sử dụng event delegation để bắt sự kiện click trên city-drop-item-a
@@ -235,7 +242,7 @@ function updateCityButtonClass() {
   var cityId = $('#city-hidden').val();
 
   if (cityId && cityId !== '0' && cityId !== 'None') {
-    $('#city-drop-toggle-btn').addClass('btn-secondary').removeClass('btn-outline-secondary');
+    $('#city-drop-toggle-btn').addClass('btn-secondary').removeClass('btn-outline-secondary').attr('disabled', false);
   } else {
     $('#city-drop-toggle-btn').addClass('btn-outline-secondary').removeClass('btn-secondary');
   }
@@ -350,7 +357,7 @@ setTimeout(function() {
   // Cập nhật nội dung của button ngay khi trang được load
   updateTypeButtonText();
 
-  if (selectedProvinceId) {
+  if (selectedProvinceId !== "0") {
     var selectedProvinceItem = $('.province-drop-item-a[data-value="' + selectedProvinceId + '"]');
     if (selectedProvinceItem.length > 0) {
       var selectedProvinceName = selectedProvinceItem.text();
@@ -359,7 +366,7 @@ setTimeout(function() {
     $('input[type=hidden][id=province-hidden]').val(selectedProvinceId).trigger('change');
   }
 
-  if (selectedCityId) {
+  if (selectedCityId !== "0") {
     var selectedCityItem = $('.city-drop-item-a[data-value="' + selectedCityId + '"]');
     if (selectedCityItem.length > 0) {
       var selectedCityName = selectedCityItem.text();
@@ -368,7 +375,7 @@ setTimeout(function() {
     $('input[type=hidden][id=city-hidden]').val(selectedCityId).trigger('change');
   }
 
-  if (selectedPriceId) {
+  if (selectedPriceId !== "0") {
     var selectedPriceItem = $('.price-drop-item-a[data-value="' + selectedPriceId + '"]');
     if (selectedPriceItem.length > 0) {
       var selectedPriceName = selectedPriceItem.text();
@@ -377,7 +384,7 @@ setTimeout(function() {
     $('input[type=hidden][id=price-range-hidden]').val(selectedPriceId).trigger('change');
   }
 
-  if (selectedAreaId) {
+  if (selectedAreaId !== "0") {
     var selectedAreaItem = $('.area-drop-item-a[data-value="' + selectedAreaId + '"]');
     if (selectedAreaItem.length > 0) {
       var selectedAreaName = selectedAreaItem.text();
@@ -524,11 +531,13 @@ $(window).on('blur', function() {
     <input type="hidden" name="province-hidden" id="province-hidden"
         value="{% if selected_province_id %}{{ selected_province_id }}{% else %}0{% endif %}">
     <input type="hidden" name="city-hidden" id="city-hidden"
-        value="{{ selected_city_id }}">
+        value="{% if selected_city_id %}{{ selected_city_id }}{% else %}0{% endif %}">
     <input type="hidden" name="price-range-hidden" id="price-range-hidden"
         value="{% if selected_price_range_id %}{{ selected_price_range_id }}{% else %}0{% endif %}">
     <input type="hidden" name="area-range-hidden" id="area-range-hidden"
         value="{% if selected_area_range_id %}{{ selected_area_range_id }}{% else %}0{% endif %}">
+    <input type="hidden" name="is-reloaded-hidden" id="is-reloaded-hidden"
+        value="{{ is_reloaded }}">
 
     <div class="row justify-content-center mt-3 mb-3 col-10 offset-1" id="search-frame">
             <div class="border p-3 rounded">

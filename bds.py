@@ -488,7 +488,7 @@ def os_bds_list():
     # Fetch other data for the template
     types = Type.query.all()
     provinces = Province.query.all()
-    cities = City.query.all() if bds_province_id else []
+    cities = get_cities_for_template(bds_province_id)
     priceRanges = PriceRange.query.all()
     areaRanges = AreaRange.query.all()
     top_bds_24 = get_bds_data(get_top_bds_24())
@@ -511,7 +511,8 @@ def os_bds_list():
         top_bds_24=top_bds_24,
         pagination=pagination,  # Pass pagination object to the template
         start_index=start_index,  # Pass start index to the template
-        end_index=end_index       # Pass end index to the template
+        end_index=end_index,       # Pass end index to the template
+        is_reloaded=True
     )
 
 
@@ -530,6 +531,10 @@ def validate_image(stream):
 
 @bds_bp.route("/get_cities/<int:province_id>", methods=["GET"])
 def get_cities(province_id):
+    return jsonify(get_cities_for_template(province_id))
+
+
+def get_cities_for_template(province_id):
     cities = City.query.filter_by(province_id=province_id).all()
     formatted_cities = [
         {
@@ -541,7 +546,7 @@ def get_cities(province_id):
         }
         for city in cities
     ]
-    return jsonify(formatted_cities)
+    return formatted_cities
 
 
 def get_bds_data(query):
