@@ -526,7 +526,7 @@ $(window).on('blur', function() {
 {% block title %}Danh sách Bds{% endblock %}
 
 {% block content %}
-<div class="container os-bds-list-html">
+<div class="container os-bds-list-html" data-test-git-branch="1">
   <form action="{{ url_for('bds.os_bds_list') }}" method="POST" class="mb-3">
     <input type="hidden" name="province-hidden" id="province-hidden"
         value="{% if selected_province_id %}{{ selected_province_id }}{% else %}0{% endif %}">
