@@ -492,6 +492,9 @@ def os_bds_list():
     priceRanges = PriceRange.query.all()
     areaRanges = AreaRange.query.all()
     top_bds_24 = get_bds_data(get_top_bds_24())
+    
+    # Sắp xếp theo số lượt xem giảm dần
+    top_bds_24_sorted = sorted(top_bds_24, key=lambda x: x['views'], reverse=True)
 
     # Render the template
     return render_template(
@@ -508,10 +511,10 @@ def os_bds_list():
         areaRanges=areaRanges,
         selected_area_range_id=area_range_id,
         keyword_input=keyword_input,
-        top_bds_24=top_bds_24,
-        pagination=pagination,  # Pass pagination object to the template
-        start_index=start_index,  # Pass start index to the template
-        end_index=end_index,       # Pass end index to the template
+        top_bds_24=top_bds_24_sorted,
+        pagination=pagination,
+        start_index=start_index,
+        end_index=end_index,
         is_reloaded=True
     )
 
@@ -596,6 +599,11 @@ def get_bds_data(query):
         else:
             is_favorite = False
 
+        # Lấy tổng số lượt xem của bds
+        view_count = db.session.query(
+            func.sum(BdsViewCount.cnt_view_today + BdsViewCount.cnt_view_24 + BdsViewCount.cnt_view_7 + BdsViewCount.cnt_view_30)
+        ).filter(BdsViewCount.bds_id == bds.id, BdsViewCount.del_flg == False).scalar() or 0
+
         bds_data.append(
             {
                 "bds": bds,
@@ -608,6 +616,7 @@ def get_bds_data(query):
                 "price_from": format_currency(bds.price_from),
                 "price_to": format_currency(bds.price_to),
                 "is_favorite": is_favorite,
+                "views": view_count,  # Thêm thông tin số lượt xem
             }
         )
     return bds_data

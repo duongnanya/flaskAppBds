@@ -1,6 +1,128 @@
 {% extends 'base.html' %}
 
 {% block dnnScript %}
+<style>
+.dropdown-menu {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.property-listing {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.property-listing:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-img-top-wrapper {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.card-img-top {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.property-listing:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.property-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.property-type {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
+  color: #fff;
+  background-color: var(--color-primary);
+  transition: background-color 0.15s ease-in-out;
+}
+
+.property-type:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.card-footer {
+  background-color: transparent;
+  border-top: 1px solid rgba(0,0,0,0.125);
+  padding-top: 0.75rem;
+}
+
+.price {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--color-success);
+}
+
+.area {
+  color: var(--color-gray-600);
+}
+
+.heart-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 1;
+}
+
+.heart-btn:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.heart-btn i {
+  color: var(--color-danger);
+  font-size: 1.2em;
+}
+
+.image-count {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .col-4 {
+    width: 100%;
+  }
+  .card-img-top-wrapper {
+    height: 250px; /* Tăng chiều cao trên màn hình nhỏ hơn */
+  }
+}
+</style>
+
 <script>
 
 //--- Click Heart để lưu/quan tâm
@@ -654,262 +776,185 @@ $(window).on('blur', function() {
                 </div>
             </div>
     </div>
-
-    <div class="row justify-content-center mt-3 mb-3">
-      <div class="col-7">
-        {% if bds_data %}
-        <p>Hiển thị {{ start_index }}-{{ end_index }} (trong {{ pagination.total }} kết quả)</p>
-        {% for bds_item in bds_data %}
-        <div class="col-12 mb-4">
-          <div class="card h-100 property-listing">
-              <div class="property-image card-img-top-wrapper position-relative">
-                  {% if bds_item.first_image_url %}
-                  <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
-                  {% else %}
-                  <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
-                  {% endif %}
-                  {% if bds_item.remaining_images_count > 0 %}
-                  <div class="position-absolute top-0 end-0 mt-3 me-3">
-                      <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
-                  </div>
-                  {% endif %}
-                  <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-                      <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
-                          style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
-                      </i>
-                  </div>
-              </div>
-              <div class="property-details card-body">
-                  <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
-                      <h5 class="card-title">{{ bds_item.bds.title }}</h5>
-                  </a>
-                  <p class="card-text">
-                      Loại:
-                      {% for bds_type in bds_item.bds_types %}
-                          {{ bds_type.name }}{% if not loop.last %} / {% endif %}
-                      {% endfor %}<br>
-                      <i class="bi bi-credit-card-2-back"></i><span class="price"> {{ bds_item.price_to }}</span>   
-                      <i class="bi bi-aspect-ratio"></i><span class="area"> {{ bds_item.bds.area }} m²</span>   
-                      <i class="bi bi-geo-alt"></i> {{ bds_item.bds_city }}, {{ bds_item.bds_province }}
-                  </p>
-              </div>
-          </div>
-        </div>
-        {% endfor %}
-
-        <nav aria-label="Page navigation example">
-          <ul class="pagination justify-content-center">
-            {% if pagination.has_prev %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=1) }}" aria-label="First">
-                <span aria-hidden="true">&laquo;&laquo;</span>
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.prev_num) }}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-              <a class="page-link" href="#" aria-label="First">
-                <span aria-hidden="true">&laquo;&laquo;</span>
-              </a>
-            </li>
-            <li class="page-item disabled">
-              <a class="page-link" href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            {% endif %}
-            
-            {% for page_num in pagination.iter_pages() %}
-            {% if page_num %}
-            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-              {% if page_num == pagination.page %}
-              <span class="page-link">{{ page_num }}</span>
-              {% else %}
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=page_num) }}">{{ page_num }}</a>
-              {% endif %}
-            </li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">…</span></li>
-            {% endif %}
-            {% endfor %}
-            
-            {% if pagination.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.next_num) }}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.pages) }}" aria-label="Last">
-                <span aria-hidden="true">&raquo;&raquo;</span>
-              </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-              <a class="page-link" href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-            <li class="page-item disabled">
-              <a class="page-link" href="#" aria-label="Last">
-                <span aria-hidden="true">&raquo;&raquo;</span>
-              </a>
-            </li>
-            {% endif %}
-          </ul>
-        </nav>
-
-        {% else %}
-        <div class="text-center mb-4">
-          <img src="{{ url_for('static', filename='uploads/not-found-bds.jpg') }}"
-                alt="Không có BĐS phù hợp" class="img-fluid" style="width: 25%;">
-          <div class="row justify-content-center col-4 offset-4">
-              <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
-          </div>
-        </div>
-        {% endif %}
-      </div>
-      <div class="col-3">
-        <div class="sticky-sidebar">
-            <p>Tin VIP (data cứng)</p>
-            <div class="mb-4">
-              <div class="card h-100 property-listing mb-4">
-                <div class="card-img-top-wrapper position-relative">
-                  <div id="carouselExampleAutoplaying" class="carousel slide pointer-event" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                      <div class="carousel-item">
-                          <img src="/static/uploads/79_Hoa_Bang_Cau_Giay_Ha_Noi_1.jpg" class="card-img-top bd-placeholder-img bd-placeholder-img-lg d-block w-100" alt="Căn hộ 2 phòng ngủ, view đẹp">
-                      </div>
-                      <div class="carousel-item">
-                          <img src="/static/uploads/79_Hoa_Bang_Cau_Giay_Ha_Noi_2.jpg" class="card-img-top bd-placeholder-img bd-placeholder-img-lg d-block w-100" alt="Căn hộ 2 phòng ngủ, view đẹp">
-                      </div>
-                      <div class="carousel-item active">
-                          <img src="/static/uploads/79_Hoa_Bang_Cau_Giay_Ha_Noi_3.jpg" class="card-img-top bd-placeholder-img bd-placeholder-img-lg d-block w-100" alt="Căn hộ 2 phòng ngủ, view đẹp">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="position-absolute top-0 start-0 mt-3 ms-4">
-                    <img src="static/uploads/vip-flag.png" style="width: 15%">
-                  </div>
-                  <div class="position-absolute top-0 end-0 mt-3 me-3">
-                    <span class="badge bg-primary">+4</span>
-                  </div>
-                  <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-                    <i class="bi bi-heart-fill bds-favorite text-danger" style="font-size: 1.5rem;" data-bds-id="1">
-                    </i>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <a href="/bds_detail/1">
-                    <h5 class="card-title">Căn hộ 2 phòng ngủ, view đẹp</h5>
-                  </a>
-                  <p class="card-text">
-                    Căn hộ chung cư
-                    <br>
-                    20 triệu / 10.0 m²<br>
-                    Tp. Long Xuyên, 
-                      An Giang
-                  </p>
-                </div>
-              </div>
-              <div class="card h-100 property-listing mb-4">
-                <div class="card-img-top-wrapper position-relative">
-                  <div id="carouselExampleAutoplaying" class="carousel slide pointer-event" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                      <div class="carousel-item">
-                          <img src="/static/uploads/79_Hoa_Bang_Cau_Giay_Ha_Noi_1.jpg" class="card-img-top bd-placeholder-img bd-placeholder-img-lg d-block w-100" alt="Căn hộ 2 phòng ngủ, view đẹp">
-                      </div>
-                      <div class="carousel-item">
-                          <img src="/static/uploads/79_Hoa_Bang_Cau_Giay_Ha_Noi_2.jpg" class="card-img-top bd-placeholder-img bd-placeholder-img-lg d-block w-100" alt="Căn hộ 2 phòng ngủ, view đẹp">
-                      </div>
-                      <div class="carousel-item active">
-                          <img src="/static/uploads/79_Hoa_Bang_Cau_Giay_Ha_Noi_3.jpg" class="card-img-top bd-placeholder-img bd-placeholder-img-lg d-block w-100" alt="Căn hộ 2 phòng ngủ, view đẹp">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="position-absolute top-0 start-0 mt-3 ms-4">
-                    <img src="static/uploads/vip-flag.png" style="width: 15%">
-                  </div>
-                  <div class="position-absolute top-0 end-0 mt-3 me-3">
-                    <span class="badge bg-primary">+4</span>
-                  </div>
-                  <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-                    <i class="bi bi-heart-fill bds-favorite text-danger" style="font-size: 1.5rem;" data-bds-id="1">
-                    </i>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <a href="/bds_detail/1">
-                    <h5 class="card-title">Căn hộ 2 phòng ngủ, view đẹp</h5>
-                  </a>
-                  <p class="card-text">
-                    Căn hộ chung cư
-                    <br>
-                    20 triệu / 10.0 m²<br>
-                    Tp. Long Xuyên, 
-                      An Giang
-                  </p>
-                </div>
-              </div>
-            </div>
-        </div>
-      </div>
-    </div>
-
   </form>
-</div>
 
-<div class="container">
-  <div class="jumbotron p-3 mb-4 rounded-3">
-    <div class="py-3">
-        <h3 class="display-7 fw-bold">Top xem nhiều 24h qua</h3>
-    </div>
-  </div>
-
-  <div class="row">
-    {% if top_bds_24 %}
-    {% for bds_item in top_bds_24 %}
-    <div class="col-3 mb-4">
+  <div class="row justify-content-center mt-3 mb-3">
+    {% if bds_data %}
+    <h3>Hiển thị {{ start_index }}-{{ end_index }} (trong {{ pagination.total }} kết quả)</h3>
+    {% for bds_item in bds_data %}
+    <div class="col-4 mb-4">
       <div class="card h-100 property-listing">
         <div class="card-img-top-wrapper position-relative">
-          {% if bds_item.first_image_url %}
-          <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
-          {% else %}
-          <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
-          {% endif %}
+          <img src="{{ bds_item.first_image_url or url_for('static', filename='uploads/no-image.jpg') }}" 
+               class="card-img-top" alt="{{ bds_item.bds.title or 'No Image' }}">
+          <button class="heart-btn" aria-label="Favorite">
+            <i class="bi {{ 'bi-heart-fill' if bds_item.is_favorite else 'bi-heart' }} bds-favorite"
+               data-bds-id="{{ bds_item.bds.id }}"></i>
+          </button>
           {% if bds_item.remaining_images_count > 0 %}
-          <div class="position-absolute top-0 end-0 mt-3 me-3">
-            <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
-          </div>
+          <span class="image-count">
+            <i class="bi bi-image"></i> +{{ bds_item.remaining_images_count }}
+          </span>
           {% endif %}
-          <div class="position-absolute bottom-0 end-0 mb-3 me-4">
-            <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
-                style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
-            </i>
-          </div>
         </div>
         <div class="card-body">
-          <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}">
-            <h5 class="card-title">{{ bds_item.bds.title }}</h5>
-          </a>
-          <p class="card-text">
+          <div class="property-types mb-2">
             {% for bds_type in bds_item.bds_types %}
-                {{ bds_type.name }}{% if not loop.last %} / {% endif %}
-            {% endfor %}<br>
-            {{ bds_item.price_to }} / {{ bds_item.bds.area }} m²<br>
-            {{ bds_item.bds_city }}, {{ bds_item.bds_province }}
+              <span class="property-type">{{ bds_type.name }}</span>
+            {% endfor %}
+          </div>
+          <h5 class="card-title">
+            <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}" class="text-decoration-none">{{ bds_item.bds.title }}</a>
+          </h5>
+          <p class="card-text text-muted">
+            <i class="bi bi-geo-alt"></i> {{ bds_item.bds_city }}, {{ bds_item.bds_province }}
           </p>
+        </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="price"><i class="bi bi-credit-card-2-back"></i> {{ bds_item.price_to }}</span>
+            <span class="area"><i class="bi bi-aspect-ratio"></i> {{ bds_item.bds.area }} m²</span>
+          </div>
         </div>
       </div>
     </div>
     {% endfor %}
+
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('bds.os_bds_list', page=1) }}" aria-label="First">
+            <span aria-hidden="true">&laquo;&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.prev_num) }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="First">
+            <span aria-hidden="true">&laquo;&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        {% endif %}
+        
+        {% for page_num in pagination.iter_pages() %}
+        {% if page_num %}
+        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+          {% if page_num == pagination.page %}
+          <span class="page-link">{{ page_num }}</span>
+          {% else %}
+          <a class="page-link" href="{{ url_for('bds.os_bds_list', page=page_num) }}">{{ page_num }}</a>
+          {% endif %}
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if pagination.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.next_num) }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('bds.os_bds_list', page=pagination.pages) }}" aria-label="Last">
+            <span aria-hidden="true">&raquo;&raquo;</span>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Last">
+            <span aria-hidden="true">&raquo;&raquo;</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+
+    {% else %}
+    <div class="text-center mb-4">
+      <img src="{{ url_for('static', filename='uploads/not-found-bds.jpg') }}"
+            alt="Không có BĐS phù hợp" class="img-fluid" style="width: 25%;">
+      <div class="row justify-content-center col-4 offset-4">
+          <button class="btn btn-secondary" type="submit" formaction="{{ url_for('contact.contact') }}">Yêu cầu tìm kiếm</button>
+      </div>
+    </div>
     {% endif %}
   </div>
+
+  <div class="jumbotron">
+    <h3>Top xem nhiều 24h qua</h3>
+  </div>
+
+  {% if top_bds_24 %}
+  <div id="topViewedCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {% for i in range(0, top_bds_24|length, 4) %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          <div class="row g-4">
+            {% for bds_item in top_bds_24[i:i+4] %}
+            <div class="col-md-3">
+              <div class="card h-100 property-listing">
+                <div class="card-img-top-wrapper position-relative">
+                  {% if bds_item.first_image_url %}
+                    <img src="{{ bds_item.first_image_url }}" class="card-img-top" alt="{{ bds_item.bds.title }}">
+                  {% else %}
+                    <img src="{{ url_for('static', filename='uploads/no-image.jpg') }}" class="card-img-top" alt="No Image">
+                  {% endif %}
+                  {% if bds_item.remaining_images_count > 0 %}
+                    <div class="position-absolute top-0 end-0 mt-3 me-3">
+                      <span class="badge bg-primary">+{{ bds_item.remaining_images_count }}</span>
+                    </div>
+                  {% endif %}
+                  <div class="position-absolute bottom-0 end-0 mb-3 me-4">
+                    <i class="bi {% if bds_item.is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} bds-favorite text-danger"
+                       style="font-size: 1.5rem;" data-bds-id="{{ bds_item.bds.id }}">
+                    </i>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="property-types mb-2">
+                    {% for bds_type in bds_item.bds_types %}
+                      <span class="property-type">{{ bds_type.name }}</span>
+                    {% endfor %}
+                  </div>
+                  <a href="{{ url_for('bds.bds_detail', bds_id=bds_item.bds.id) }}" class="text-decoration-none">
+                    <h5 class="card-title">{{ bds_item.bds.title }}</h5>
+                  </a>
+                  <p class="card-text text-muted">
+                    <i class="bi bi-geo-alt"></i> {{ bds_item.bds_city }}, {{ bds_item.bds_province }}
+                  </p>
+                </div>
+                <div class="card-footer">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="views"><i class="bi bi-eye"></i> Lượt xem: {{ bds_item.views }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 
-<div id="global-overlay" class="global-overlay" style="display: none;"></div>
+<!-- <div id="global-overlay" class="global-overlay" style="display: none;"></div> -->
 {% endblock %}
